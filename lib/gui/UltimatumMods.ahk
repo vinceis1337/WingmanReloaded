@@ -32,8 +32,9 @@ UltimatumModsUI:
     LV_ModifyCol(A_Index, "AutoHdr")
 
   ; Row 1 – persistence buttons + loaded-file indicator
-  Gui, UltimatumUI: Add, Button, gSaveUltimatumJson w160 h30,      Save Modifier Json
-  Gui, UltimatumUI: Add, Button, gLoadUltimatumJson w160 h30 x+5,  Load Modifier Json
+  Gui, UltimatumUI: Add, Button, gSaveUltimatumJson   w160 h30,      Save Modifier Json
+  Gui, UltimatumUI: Add, Button, gLoadUltimatumJson   w160 h30 x+5,  Load Modifier Json
+  Gui, UltimatumUI: Add, Button, gLoadUltimatumDefaults w120 h30 x+5, Load Defaults
   SplitPath, UltimatumModsJsonPath, UT_ShortName
   Gui, UltimatumUI: Add, Text, vUltimatumLoadedFile x+10 yp+8, %UT_ShortName%
 
@@ -191,6 +192,23 @@ SaveUltimatumJson:
   FileAppend, % JSON.Dump(WR.UltimatumMods.Modifiers,, 2), %UT_SavePath%
   UltimatumModsJsonPath := UT_SavePath
   IniWrite, %UltimatumModsJsonPath%, %A_ScriptDir%\save\Settings.ini, Automation, UltimatumModsJsonPath
+  SplitPath, UltimatumModsJsonPath, UT_ShortName
+  GuiControl,, UltimatumLoadedFile, %UT_ShortName%
+Return
+
+; ─────────────────────────────────────────────────────────────────────────────
+; Load the bundled default JSON without a file-selection dialog
+; ─────────────────────────────────────────────────────────────────────────────
+LoadUltimatumDefaults:
+  UT_DefaultPath := A_ScriptDir "\data\default save data\automation\ultimatum\default_UltimatumMods.json"
+  UltimatumLoadFromPath(UT_DefaultPath)
+  UltimatumModsJsonPath := UT_DefaultPath
+  IniWrite, %UltimatumModsJsonPath%, %A_ScriptDir%\save\Settings.ini, Automation, UltimatumModsJsonPath
+  Gui, UltimatumUI: Default
+  LV_Delete()
+  UltimatumRefreshList()
+  Loop % LV_GetCount("Column")
+    LV_ModifyCol(A_Index, "AutoHdr")
   SplitPath, UltimatumModsJsonPath, UT_ShortName
   GuiControl,, UltimatumLoadedFile, %UT_ShortName%
 Return
