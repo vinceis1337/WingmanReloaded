@@ -8,7 +8,7 @@ WR_StatusBarCtrl.SetText("Logic Status", 1)
 WR_StatusBarCtrl.SetText("Location Status", 2)
 WR_StatusBarCtrl.SetText("Percentage not updated", 3)
 
-MainGuiTabCtrl := MainGui.Add("Tab2", "vMainGuiTabs xm y3 w655 h505 -wrap", ["Main","Configuration","Hotkeys","Debug"])
+MainGuiTabCtrl := MainGui.Add("Tab2", "vMainGuiTabs xm y3 w655 h505 -wrap", ["Main","Configuration","Hotkeys","Debug","Automation"])
 ; #Main Tab
 	MainGuiTabCtrl.UseTab(1)
 	MainGui.SetFont()
@@ -433,5 +433,12 @@ MainGuiTabCtrl := MainGui.Add("Tab2", "vMainGuiTabs xm y3 w655 h505 -wrap", ["Ma
 
 	MainGui.Add("Edit", "xs+20 y+10 w40 h20 vSetDefaultMouseSpeedValue", SetDefaultMouseSpeedValue).OnEvent("Change", SaveDelays)
 	MainGui.Add("Text", "x+5", "Mouse Speed (0-100)")
+
+; #Automation Tab
+	MainGuiTabCtrl.UseTab(5)
+	MainGui.SetFont("Bold s9 cBlack", "Arial")
+	MainGui.Add("GroupBox", "Section w200 h65 xm+5 ym+20", "Ultimatum")
+	MainGui.SetFont()
+	MainGui.Add("Button", "xs+5 ys+20 w185 h30", "Ultimatum").OnEvent("Click", UltimatumModsUI)
 
 	MainGuiTabCtrl.UseTab()

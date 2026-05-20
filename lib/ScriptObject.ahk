@@ -3,7 +3,7 @@
 Global WR := {loc:{}, Flask:{}, Utility:{}, perChar:{}, Debug:{}
 	, cdExpires:{}, func:{}, data:{}, String:{}, Restock:Map()
 	, CustomCraftingBases:{}, CustomMapMods:{}, ItemCrafting:{}, ActualTier:{}
-	, Disenchant:{}}
+	, Disenchant:{}, UltimatumMods:{}}
 LoadDisenchanting()
 
 WR.loc.pixel := {}, WR.loc.area := {}
@@ -92,6 +92,7 @@ WR.String.h1080.General:={OHB:"|<1080 Overhead Health Bar>0x201614@0.99$106.Tzzz
 
 WR.CustomMapMods.MapMods := []
 WR.CustomMapMods.HeistMods := []
+WR.UltimatumMods.Modifiers := []
 
 for _k,_v in POEData
 {
