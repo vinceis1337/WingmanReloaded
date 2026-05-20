@@ -184,7 +184,8 @@ SaveUltimatumJson:
   }
   UT_SaveDir := A_ScriptDir "\save\automation\ultimatum"
   FileCreateDir, %UT_SaveDir%
-  FileSelectFile, UT_SavePath, S16, %UT_SaveDir%\
+  SplitPath, UltimatumModsJsonPath, UT_ShortName
+  FileSelectFile, UT_SavePath, S16, %UT_SaveDir%\%UT_ShortName%
     , Save Modifier Json, JSON Files (*.json)
   If (UT_SavePath = "")
     Return
