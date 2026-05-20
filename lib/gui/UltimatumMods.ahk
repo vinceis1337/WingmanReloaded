@@ -196,7 +196,7 @@ UltimatumTestDetection(*) {
     }
 
     ; Capture full screen once; reuse cached frame for all FindText calls
-    FindText.ScreenShot(0, 0, A_ScreenWidth, A_ScreenHeight)
+    FindText().ScreenShot(0, 0, A_ScreenWidth, A_ScreenHeight)
 
     total := UltimatumLV.GetCount()
     found := 0
