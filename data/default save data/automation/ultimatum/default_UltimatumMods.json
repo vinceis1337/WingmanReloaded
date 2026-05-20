@@ -1,0 +1,541 @@
+﻿[
+  {
+    "Detail": "A cloud that deals Chaos Damage over Time will follow you",
+    "FindText": "",
+    "ModifierName": "Choking Miasma",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "A large cloud that deals Chaos Damage over Time will follow you",
+    "FindText": "",
+    "ModifierName": "Choking Miasma",
+    "Rating": "Easy",
+    "Tier": "2"
+  },
+  {
+    "Detail": "A large and fast cloud that deals Chaos Damage over Time will follow you",
+    "FindText": "",
+    "ModifierName": "Choking Miasma",
+    "Rating": "Easy",
+    "Tier": "3"
+  },
+  {
+    "Detail": "A large and very fast cloud that slows you and deals Chaos Damage over Time will follow you",
+    "FindText": "",
+    "ModifierName": "Choking Miasma",
+    "Rating": "Easy",
+    "Tier": "4"
+  },
+  {
+    "Detail": "Runes will appear that will call deadly Lightning storms if you remain in them",
+    "FindText": "",
+    "ModifierName": "Stormcaller Runes",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Large runes will appear that will call deadly Lightning storms if you remain in them",
+    "FindText": "",
+    "ModifierName": "Stormcaller Runes",
+    "Rating": "Easy",
+    "Tier": "2"
+  },
+  {
+    "Detail": "Many large runes will appear that will call deadly Lightning storms if you remain in them",
+    "FindText": "",
+    "ModifierName": "Stormcaller Runes",
+    "Rating": "Easy",
+    "Tier": "3"
+  },
+  {
+    "Detail": "Many large runes will appear that will call deadly Lightning storms if you remain in them for a short amount of time",
+    "FindText": "",
+    "ModifierName": "Stormcaller Runes",
+    "Rating": "Easy",
+    "Tier": "4"
+  },
+  {
+    "Detail": "Skulls will appear that spit Fire if you remain near them",
+    "FindText": "",
+    "ModifierName": "Raging Dead",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Many skulls will appear that spit Fire if you remain near them",
+    "FindText": "",
+    "ModifierName": "Raging Dead",
+    "Rating": "Easy",
+    "Tier": "2"
+  },
+  {
+    "Detail": "Many skulls will appear that pursue you and spit Fire when near you",
+    "FindText": "",
+    "ModifierName": "Raging Dead",
+    "Rating": "Easy",
+    "Tier": "3"
+  },
+  {
+    "Detail": "Many skulls will appear that pursue you and quickly spit a large wave of Fire when near you",
+    "FindText": "",
+    "ModifierName": "Raging Dead",
+    "Rating": "Easy",
+    "Tier": "4"
+  },
+  {
+    "Detail": "Frozen pustules will periodically appear and explode when you approach",
+    "FindText": "",
+    "ModifierName": "Blistering Cold",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Many frozen pustules will periodically appear and rapidly explode when you approach",
+    "FindText": "",
+    "ModifierName": "Blistering Cold",
+    "Rating": "Easy",
+    "Tier": "2"
+  },
+  {
+    "Detail": "Many frozen pustules will periodically appear, chill you, and rapidly explode when you approach",
+    "FindText": "",
+    "ModifierName": "Blistering Cold",
+    "Rating": "Easy",
+    "Tier": "3"
+  },
+  {
+    "Detail": "Many frozen pustules will periodically appear, chill you, and rapidly explode when you approach, freezing if they hit",
+    "FindText": "",
+    "ModifierName": "Blistering Cold",
+    "Rating": "Easy",
+    "Tier": "4"
+  },
+  {
+    "Detail": "A patch of Unhallowed Ground will appear that Hinder players and cause slain Monsters to resurrect as Zombies",
+    "FindText": "",
+    "ModifierName": "Restless Ground",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Multiple patches of Unhallowed Ground will appear that Hinder players and cause slain Monsters to resurrect as Zombies",
+    "FindText": "",
+    "ModifierName": "Restless Ground",
+    "Rating": "Easy",
+    "Tier": "2"
+  },
+  {
+    "Detail": "Many patches of Unhallowed Ground will appear that Hinder players and cause slain Monsters to resurrect as Ruin-inflicting Zombies\nFail on reaching 7 Ruin",
+    "FindText": "",
+    "ModifierName": "Restless Ground",
+    "Rating": "Easy",
+    "Tier": "3"
+  },
+  {
+    "Detail": "Many patches of Unhallowed Ground will appear that Hinder players and prevent them recovering Life and Energy Shield, and cause slain Monsters to resurrect as Ruin-inflicting Zombies\nFail on reaching 7 Ruin",
+    "FindText": "",
+    "ModifierName": "Restless Ground",
+    "Rating": "Easy",
+    "Tier": "4"
+  },
+  {
+    "Detail": "Patches of Unhallowed Ground will appear that Hinder players and cause slain Monsters to resurrect as Phantasms",
+    "FindText": "",
+    "ModifierName": "Restless Ground",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Many patches of Unhallowed Ground will appear that Hinder players and cause slain Monsters to resurrect as Phantasms",
+    "FindText": "",
+    "ModifierName": "Restless Ground",
+    "Rating": "Easy",
+    "Tier": "2"
+  },
+  {
+    "Detail": "Many patches of Unhallowed Ground will appear that Hinder players and cause slain Monsters to resurrect as Ruin-inflicting Phantasms\nFail on reaching 7 Ruin",
+    "FindText": "",
+    "ModifierName": "Restless Ground",
+    "Rating": "Easy",
+    "Tier": "3"
+  },
+  {
+    "Detail": "Many patches of Unhallowed Ground will appear that Hinder players and cause slain Monsters to resurrect as Ruin-inflicting Phantasms\nFail on reaching 7 Ruin",
+    "FindText": "",
+    "ModifierName": "Restless Ground",
+    "Rating": "Easy",
+    "Tier": "4"
+  },
+  {
+    "Detail": "An invulnerable shade stalks you, inflicting Ruin with its Melee Attacks\nFail on reaching 7 Ruin",
+    "FindText": "",
+    "ModifierName": "Stalking Ruin",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "An invulnerable shade stalks you, gaining speed and inflicting Ruin with Melee Attacks and Spells\nFail on reaching 7 Ruin",
+    "FindText": "",
+    "ModifierName": "Stalking Ruin",
+    "Rating": "Easy",
+    "Tier": "2"
+  },
+  {
+    "Detail": "An invulnerable shade stalks you, gaining further speed and inflicting Ruin with Melee Attacks and powerful Spells\nFail on reaching 7 Ruin",
+    "FindText": "",
+    "ModifierName": "Stalking Ruin",
+    "Rating": "Easy",
+    "Tier": "3"
+  },
+  {
+    "Detail": "An invulnerable shade stalks you, aggressively casting Spells that inflict Ruin while teleporting to random locations\nFail on reaching 7 Ruin",
+    "FindText": "",
+    "ModifierName": "Stalking Ruin",
+    "Rating": "Easy",
+    "Tier": "4"
+  },
+  {
+    "Detail": "Blades will periodically appear and fly at you, applying Corrupted Blood on Hit",
+    "FindText": "",
+    "ModifierName": "Razor Dance",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Many blades will periodically appear and fly at you, applying Corrupted Blood on Hit",
+    "FindText": "",
+    "ModifierName": "Razor Dance",
+    "Rating": "Easy",
+    "Tier": "2"
+  },
+  {
+    "Detail": "Swarms of blades will periodically appear and fly at you, applying Corrupted Blood on Hit",
+    "FindText": "",
+    "ModifierName": "Razor Dance",
+    "Rating": "Easy",
+    "Tier": "3"
+  },
+  {
+    "Detail": "Swarms of blades will periodically appear and fly at you, applying Corrupted Blood on Hit and leaving a trail of Blood ground",
+    "FindText": "",
+    "ModifierName": "Razor Dance",
+    "Rating": "Easy",
+    "Tier": "4"
+  },
+  {
+    "Detail": "An invulnerable Totem will appear that imbues both its allies and its enemies with Speed and powerful Physical Damage benefits, but causes enemies to take 10% of their maximum Life and Energy Shield as Physical Damage per second",
+    "FindText": "",
+    "ModifierName": "Totem of Costly Might",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "An invulnerable Totem will appear that imbues both its allies and its enemies with Speed and powerful Elemental Damage benefits, but causes enemies to take 15% of their maximum Life and Energy Shield as Fire Damage per second",
+    "FindText": "",
+    "ModifierName": "Totem of Costly Potency",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "A ring of Blood surrounds the Altar, dealing heavy Physical Damage over time",
+    "FindText": "",
+    "ModifierName": "Blood Altar",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "A large ring of Blood surrounds the Altar, dealing heavy Physical Damage over time",
+    "FindText": "",
+    "ModifierName": "Blood Altar",
+    "Rating": "Easy",
+    "Tier": "2"
+  },
+  {
+    "Detail": "A pit of slowing Quicksand will periodically appear",
+    "FindText": "",
+    "ModifierName": "Quiciksand",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "A large pit of slowing Quicksand will periodically appear",
+    "FindText": "",
+    "ModifierName": "Quiciksand",
+    "Rating": "Easy",
+    "Tier": "2"
+  },
+  {
+    "Detail": "Many large pits of slowing Quicksand will periodically appear",
+    "FindText": "",
+    "ModifierName": "Quiciksand",
+    "Rating": "Easy",
+    "Tier": "3"
+  },
+  {
+    "Detail": "Many large pits of slowing Quicksand that reduce Life Recovery Rate by 50% will periodically appear",
+    "FindText": "",
+    "ModifierName": "Quiciksand",
+    "Rating": "Easy",
+    "Tier": "4"
+  },
+  {
+    "Detail": "The encounter area will be much smaller",
+    "FindText": "",
+    "ModifierName": "Limited Arena",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "A Monster type will apply Ruin with its special ability\nFail on reaching 7 Ruin",
+    "FindText": "",
+    "ModifierName": "Ruin",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "A Monster type will apply double Ruin with its special ability\nFail on reaching 7 Ruin",
+    "FindText": "",
+    "ModifierName": "Ruin",
+    "Rating": "Easy",
+    "Tier": "2"
+  },
+  {
+    "Detail": "Two Monster types will apply double Ruin with their special abilities\nFail on reaching 7 Ruin",
+    "FindText": "",
+    "ModifierName": "Ruin",
+    "Rating": "Easy",
+    "Tier": "3"
+  },
+  {
+    "Detail": "Two Monster types will apply quadruple Ruin with their special abilities\nFail on reaching 7 Ruin",
+    "FindText": "",
+    "ModifierName": "Ruin",
+    "Rating": "Easy",
+    "Tier": "4"
+  },
+  {
+    "Detail": "60% Reduced Life, Mana, and Energy Shield Recovery Rate",
+    "FindText": "",
+    "ModifierName": "Reduced Recovery",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "90% Reduced Life, Mana, and Energy Shield Recovery Rate",
+    "FindText": "",
+    "ModifierName": "Reduced Recovery",
+    "Rating": "Easy",
+    "Tier": "2"
+  },
+  {
+    "Detail": "Players have 60% less Area of Effect and Projectile Speed",
+    "FindText": "",
+    "ModifierName": "Lessened Reach",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Buffs expire five times faster on Players",
+    "FindText": "",
+    "ModifierName": "Buffs Expire Faster",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Cooldowns take five times longer to recharge",
+    "FindText": "",
+    "ModifierName": "Less Cooldown Recovery",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "For the remainder of the encounter, damage taken will slowly increase by 2% per second, up to 50%",
+    "FindText": "",
+    "ModifierName": "Escalating Damage Taken",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Monsters gain 5% increased attack, cast, and movement speed per second they are alive, up to 50%",
+    "FindText": "",
+    "ModifierName": "Escalating Monster Speed",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Monsters deal 80% of Physical Damage Added as Chaos Damage",
+    "FindText": "",
+    "ModifierName": "Profane Monsters",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Your Critical Strike Chance is Unlucky\nMonsters take 50% reduced Extra Damage from Critical Strikes",
+    "FindText": "",
+    "ModifierName": "Unlucky Criticals",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Using a Flask Hinders you by 50% for 4 seconds",
+    "FindText": "",
+    "ModifierName": "Hindering Flasks",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Cannot gain Flask Charges",
+    "FindText": "",
+    "ModifierName": "Drought",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Curses and Non-damaging Ailments you apply are Reflected\nMonsters are unaffected by Curses",
+    "FindText": "",
+    "ModifierName": "Ailment and Curse Reflection",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Take 1000% of Mana costs as Lightning Damage",
+    "FindText": "",
+    "ModifierName": "Lightning Damage from Mana Costs",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Your Projectiles fly in random directions\nMonsters fire additional Projectiles",
+    "FindText": "",
+    "ModifierName": "Random Projectiles",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Your Auras that affect Allies also affect Enemies",
+    "FindText": "",
+    "ModifierName": "Treacherous Auras",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "You and your Minions deal no damage for 2 seconds every 8 seconds",
+    "FindText": "",
+    "ModifierName": "Occasional Impotence",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Lose a Power, Frenzy, and Endurance Charge every second\nMonsters gain Power, Frenzy, and Endurance Charges on hit",
+    "FindText": "",
+    "ModifierName": "Siphoned Charges",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Players have -9% to all maximum Resistances",
+    "FindText": "",
+    "ModifierName": "Impurity",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Players have 50% reduced effect of Non-Curse Auras from Skills",
+    "FindText": "",
+    "ModifierName": "Waning Spirit",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "You cannot Block",
+    "FindText": "",
+    "ModifierName": "Shattered Shield",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Monsters cannot be Slowed or Stunned",
+    "FindText": "",
+    "ModifierName": "Unstoppable Monsters",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Rare Monsters have 2 additional Modifiers",
+    "FindText": "",
+    "ModifierName": "Lethal Rare Monsters",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Monsters have 50% chance to Block Attack and Spell Damage",
+    "FindText": "",
+    "ModifierName": "Shielding Monsters",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Monster Hits cannot be Evaded",
+    "FindText": "",
+    "ModifierName": "Precise Monsters",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Monster Hits Overwhelm all Physical Damage Reduction",
+    "FindText": "",
+    "ModifierName": "Overwhelming Monsters",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Monster Hits are always Critical Strikes",
+    "FindText": "",
+    "ModifierName": "Deadly Monsters",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Monsters gain 50% of Physical Damage as Extra Damage of each Element",
+    "FindText": "",
+    "ModifierName": "Prismatic Monsters",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Monsters have +50% to all Resistances",
+    "FindText": "",
+    "ModifierName": "Resistant Monsters",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Monsters Suppress Spell Damage and gain 500% increased Evasion Rating",
+    "FindText": "",
+    "ModifierName": "Dexterous Monsters",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Monster Hits remove 10% of current Energy Shield and Mana",
+    "FindText": "",
+    "ModifierName": "Siphoning Monsters",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Monsters Poison and Bleed on Hit",
+    "FindText": "",
+    "ModifierName": "Putrid Monsters",
+    "Rating": "Easy",
+    "Tier": "1"
+  },
+  {
+    "Detail": "Monster Elemental Resistances cannot be Penetrated",
+    "FindText": "",
+    "ModifierName": "Impenetrable Monsters",
+    "Rating": "Easy",
+    "Tier": "1"
+  }
+]
