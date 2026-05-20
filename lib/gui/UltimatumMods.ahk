@@ -1,332 +1,318 @@
 ; Ultimatum Modifier Manager GUI
 
-UltimatumRowNumber := 0
-
-; ─────────────────────────────────────────────────────────────────────────────
-; Load JSON from path into WR.UltimatumMods.Modifiers (silent on missing file)
-; ─────────────────────────────────────────────────────────────────────────────
-UltimatumLoadFromPath(path)
-{
-  global WR
-  If (!FileExist(path))
-    Return
-  Try {
-    obj := JSON.Load(FileOpen(path, "r").Read())
-  } Catch {
-    Return
-  }
-  WR.UltimatumMods.Modifiers := obj
+UltimatumLoadFromPath(path) {
+    global WR
+    if !FileExist(path)
+        return
+    try
+        obj := JSON.Load(FileOpen(path, "r").Read())
+    catch
+        return
+    WR.UltimatumMods.Modifiers := obj
 }
 
 ; ─────────────────────────────────────────────────────────────────────────────
 ; Open / Rebuild the Ultimatum Modifier Manager window
 ; ─────────────────────────────────────────────────────────────────────────────
-UltimatumModsUI:
-  Gui, UltimatumUI: New
-  Gui, UltimatumUI: Default
-  Gui, UltimatumUI: +AlwaysOnTop -MinimizeBox
-  Gui, UltimatumUI: Add, ListView, w950 h400 -wrap -Multi Grid gUltimatumListViewClick vUltimatumListView
-    , Modifier Name|Tier|Detail|Rating|FindText
-  UltimatumRefreshList()
-  Loop % LV_GetCount("Column")
-    LV_ModifyCol(A_Index, "AutoHdr")
+UltimatumModsUI(*) {
+    global UltimatumUI, UltimatumLV, UltimatumFileLbl
+    global WR, UltimatumModsJsonPath
+    global YesUltimatumShowHighlight, YesUltimatumShowScreenshot
 
-  ; Row 1 – persistence buttons + loaded-file indicator
-  Gui, UltimatumUI: Add, Button, gSaveUltimatumJson   w160 h30,      Save Modifier Json
-  Gui, UltimatumUI: Add, Button, gLoadUltimatumJson   w160 h30 x+5,  Load Modifier Json
-  Gui, UltimatumUI: Add, Button, gLoadUltimatumDefaults w120 h30 x+5, Load Defaults
-  SplitPath, UltimatumModsJsonPath, UT_ShortName
-  Gui, UltimatumUI: Add, Text, vUltimatumLoadedFile x+10 yp+8, %UT_ShortName%
+    UltimatumUI := Gui()
+    UltimatumUI.Opt("+AlwaysOnTop -MinimizeBox")
+    UltimatumUI.Title := "Ultimatum Modifier Manager"
 
-  ; Row 2 – Debug tools GroupBox
-  Gui, UltimatumUI: Add, GroupBox, Section w650 h90 xs y+10, Debug
-  Gui, UltimatumUI: Add, Button, gAddUltimatumRow       w115 h28 xs+5 ys+18, Add Modifier
-  Gui, UltimatumUI: Add, Button, gMoveUltimatumUp       w100 h28 x+5,        Move Up
-  Gui, UltimatumUI: Add, Button, gMoveUltimatumDown     w100 h28 x+5,        Move Down
-  Gui, UltimatumUI: Add, Button, gDuplicateUltimatumRow w120 h28 x+5,        Duplicate Row
-  Gui, UltimatumUI: Add, Button, gUltimatumTestDetection w130 h28 xs+5 y+8,  Test Detection
-  Gui, UltimatumUI: Add, CheckBox, gSaveUltimatumHighlight vYesUltimatumShowHighlight Checked%YesUltimatumShowHighlight% x+8 yp+6, Show Highlight
-  Gui, UltimatumUI: Add, CheckBox, gSaveUltimatumScreenshot vYesUltimatumShowScreenshot Checked%YesUltimatumShowScreenshot% x+8 yp, Show Screenshot
+    UltimatumLV := UltimatumUI.Add("ListView", "w950 h400 -wrap -Multi Grid",
+        ["Modifier Name", "Tier", "Detail", "Rating", "FindText"])
+    UltimatumLV.OnEvent("DoubleClick", UltimatumLVEdit)
+    UltimatumRefreshList()
+    Loop UltimatumLV.GetCount("Column")
+        UltimatumLV.ModifyCol(A_Index, "AutoHdr")
 
-  Gui, UltimatumUI: Show, , Ultimatum Modifier Manager
-Return
+    ; Row 1 – persistence buttons + loaded-file label
+    SplitPath(UltimatumModsJsonPath, &shortName)
+    UltimatumUI.Add("Button", "w160 h30",     "Save Modifier Json").OnEvent("Click", UltimatumSaveJson)
+    UltimatumUI.Add("Button", "w160 h30 x+5", "Load Modifier Json").OnEvent("Click", UltimatumLoadJson)
+    UltimatumUI.Add("Button", "w120 h30 x+5", "Load Defaults").OnEvent("Click",      UltimatumLoadDefaults)
+    UltimatumFileLbl := UltimatumUI.Add("Text", "x+10 yp+8", shortName)
 
-; ─────────────────────────────────────────────────────────────────────────────
-; ListView event – double-click opens the row editor
-; ─────────────────────────────────────────────────────────────────────────────
-UltimatumListViewClick:
-  If (A_GuiEvent = "DoubleClick")
-  {
-    UltimatumRowNumber := A_EventInfo
-    If (UltimatumRowNumber = 0)
-      Return
-    LV_GetText(UT_Name,     UltimatumRowNumber, 1)
-    LV_GetText(UT_Tier,     UltimatumRowNumber, 2)
-    LV_GetText(UT_Detail,   UltimatumRowNumber, 3)
-    LV_GetText(UT_Rating,   UltimatumRowNumber, 4)
-    LV_GetText(UT_FindText, UltimatumRowNumber, 5)
+    ; Row 2 – Debug group
+    UltimatumUI.Add("GroupBox", "Section w700 h90 xs y+10", "Debug")
+    UltimatumUI.Add("Button", "xs+5 ys+18 w115 h28", "Add Modifier").OnEvent("Click",    UltimatumAddRow)
+    UltimatumUI.Add("Button", "x+5 w100 h28",         "Move Up").OnEvent("Click",        UltimatumMoveUp)
+    UltimatumUI.Add("Button", "x+5 w100 h28",         "Move Down").OnEvent("Click",      UltimatumMoveDown)
+    UltimatumUI.Add("Button", "x+5 w120 h28",         "Duplicate Row").OnEvent("Click",  UltimatumDuplicateRow)
+    UltimatumUI.Add("Button", "x+5 w130 h28",         "Test Detection").OnEvent("Click", UltimatumTestDetection)
+    cbHL := UltimatumUI.Add("CheckBox", "x+8 yp+6", "Show Highlight")
+    cbHL.Value := YesUltimatumShowHighlight
+    cbHL.OnEvent("Click", (*) => UltimatumSaveHighlight(cbHL))
+    cbSS := UltimatumUI.Add("CheckBox", "x+8 yp", "Show Screenshot")
+    cbSS.Value := YesUltimatumShowScreenshot
+    cbSS.OnEvent("Click", (*) => UltimatumSaveScreenshot(cbSS))
 
-    Gui, UltimatumEditUI: New
-    Gui, UltimatumEditUI: +AlwaysOnTop -MinimizeBox
-    Gui, UltimatumEditUI: Add, Text,         Section,                Modifier Name:
-    Gui, UltimatumEditUI: Add, Edit,         vUT_Edit_Name w240 xs y+3,       %UT_Name%
-    Gui, UltimatumEditUI: Add, Text,         xs y+8,                 Tier:
-    Gui, UltimatumEditUI: Add, Edit,         vUT_Edit_Tier w80 xs y+3,        %UT_Tier%
-    Gui, UltimatumEditUI: Add, Text,         xs y+8,                 Detail:
-    Gui, UltimatumEditUI: Add, Edit,         vUT_Edit_Detail w380 xs y+3,     %UT_Detail%
-    Gui, UltimatumEditUI: Add, Text,         xs y+8,                 Rating:
-    Gui, UltimatumEditUI: Add, DropDownList, vUT_Edit_Rating xs y+3,          Easy|Manageable|Hard|Deadly
-    GuiControl, UltimatumEditUI: ChooseString, UT_Edit_Rating, %UT_Rating%
-    Gui, UltimatumEditUI: Add, Text,         xs y+8,                 FindText:
-    Gui, UltimatumEditUI: Add, Edit,         vUT_Edit_FindText w310 xs y+3 r1, %UT_FindText%
-    Gui, UltimatumEditUI: Add, Button,       gOpenUltimatumFTCapture w65 h20 x+3 yp, Capture
-    Gui, UltimatumEditUI: Add, Button,       gSaveUltimatumRow  w120 h28 xs y+10, Save
-    Gui, UltimatumEditUI: Add, Button,       gDeleteUltimatumRow w120 h28 x+5,    Delete Row
-    Gui, UltimatumEditUI: Show, , Edit Ultimatum Modifier
-  }
-Return
+    UltimatumUI.Show()
+}
 
 ; ─────────────────────────────────────────────────────────────────────────────
-; Save edits back into the ListView row
+; Populate ListView from WR.UltimatumMods.Modifiers
 ; ─────────────────────────────────────────────────────────────────────────────
-SaveUltimatumRow:
-  Gui, UltimatumEditUI: Submit, NoHide
-  Gui, UltimatumUI: Default
-  LV_Modify(UltimatumRowNumber,, UT_Edit_Name, UT_Edit_Tier, UT_Edit_Detail, UT_Edit_Rating, UT_Edit_FindText)
-  Gui, UltimatumEditUI: Hide
-Return
+UltimatumRefreshList() {
+    global UltimatumLV, WR
+    for k, v in WR.UltimatumMods.Modifiers
+        UltimatumLV.Add("", v["ModifierName"], v["Tier"], v["Detail"], v["Rating"], v["FindText"])
+}
 
 ; ─────────────────────────────────────────────────────────────────────────────
-; Delete the currently-edited row
+; Helper – read all five fields from a ListView row into an object
 ; ─────────────────────────────────────────────────────────────────────────────
-DeleteUltimatumRow:
-  Gui, UltimatumEditUI: Hide
-  Gui, UltimatumUI: Default
-  LV_Delete(UltimatumRowNumber)
-Return
+UltimatumGetRowData(lv, row) {
+    return {
+        name:   lv.GetText(row, 1),
+        tier:   lv.GetText(row, 2),
+        detail: lv.GetText(row, 3),
+        rating: lv.GetText(row, 4),
+        ft:     lv.GetText(row, 5)
+    }
+}
 
 ; ─────────────────────────────────────────────────────────────────────────────
-; Open the FindText capture tool so the user can generate a FindText string
+; Double-click a row → open the row editor dialog
 ; ─────────────────────────────────────────────────────────────────────────────
-OpenUltimatumFTCapture:
-  GoSub, ft_Start
-Return
+UltimatumLVEdit(ctrl, rowNum, *) {
+    global UltimatumLV
+    if !rowNum
+        return
+
+    d := UltimatumGetRowData(UltimatumLV, rowNum)
+
+    e := Gui()
+    e.Opt("+AlwaysOnTop -MinimizeBox")
+    e.Title := "Edit Ultimatum Modifier"
+
+    e.Add("Text",  "Section",          "Modifier Name:")
+    eName   := e.Add("Edit",  "xs y+3 w240",  d.name)
+    e.Add("Text",  "xs y+8",           "Tier:")
+    eTier   := e.Add("Edit",  "xs y+3 w80",   d.tier)
+    e.Add("Text",  "xs y+8",           "Detail:")
+    eDetail := e.Add("Edit",  "xs y+3 w380",  d.detail)
+    e.Add("Text",  "xs y+8",           "Rating:")
+    eRating := e.Add("DropDownList", "xs y+3", ["Easy", "Manageable", "Hard", "Deadly"])
+    eRating.Choose(d.rating)
+    e.Add("Text",  "xs y+8",           "FindText:")
+    eFT     := e.Add("Edit",  "xs y+3 w310 r1", d.ft)
+    e.Add("Button", "x+3 yp w65 h20", "Capture").OnEvent("Click", (*) => ft_Start())
+    e.Add("Button", "xs y+10 w120 h28", "Save").OnEvent("Click",
+        (*) => UltimatumCommitRow(e, rowNum, eName, eTier, eDetail, eRating, eFT))
+    e.Add("Button", "x+5 w120 h28", "Delete Row").OnEvent("Click",
+        (*) => UltimatumDeleteRow(e, rowNum))
+    e.Show()
+}
+
+; ─────────────────────────────────────────────────────────────────────────────
+; Commit edits from the row editor back into the main ListView
+; ─────────────────────────────────────────────────────────────────────────────
+UltimatumCommitRow(editGui, rowNum, eName, eTier, eDetail, eRating, eFT, *) {
+    global UltimatumLV
+    UltimatumLV.Modify(rowNum,, eName.Value, eTier.Value, eDetail.Value, eRating.Text, eFT.Value)
+    editGui.Hide()
+}
+
+; ─────────────────────────────────────────────────────────────────────────────
+; Delete the row being edited
+; ─────────────────────────────────────────────────────────────────────────────
+UltimatumDeleteRow(editGui, rowNum, *) {
+    global UltimatumLV
+    editGui.Hide()
+    UltimatumLV.Delete(rowNum)
+}
 
 ; ─────────────────────────────────────────────────────────────────────────────
 ; Add a blank placeholder row at the bottom
 ; ─────────────────────────────────────────────────────────────────────────────
-AddUltimatumRow:
-  Gui, UltimatumUI: Default
-  LV_Add("", "New Modifier", "1", "", "Easy", "")
-  Loop % LV_GetCount("Column")
-    LV_ModifyCol(A_Index, "AutoHdr")
-Return
+UltimatumAddRow(*) {
+    global UltimatumLV
+    UltimatumLV.Add("", "New Modifier", "1", "", "Easy", "")
+    Loop UltimatumLV.GetCount("Column")
+        UltimatumLV.ModifyCol(A_Index, "AutoHdr")
+}
 
 ; ─────────────────────────────────────────────────────────────────────────────
 ; Move selected row one position up
 ; ─────────────────────────────────────────────────────────────────────────────
-MoveUltimatumUp:
-  Gui, UltimatumUI: Default
-  selRow := LV_GetNext(0, "F")
-  If (selRow <= 1)
-    Return
-  LV_GetText(UT_Name,     selRow, 1)
-  LV_GetText(UT_Tier,     selRow, 2)
-  LV_GetText(UT_Detail,   selRow, 3)
-  LV_GetText(UT_Rating,   selRow, 4)
-  LV_GetText(UT_FindText, selRow, 5)
-  LV_Delete(selRow)
-  LV_Insert(selRow - 1, "", UT_Name, UT_Tier, UT_Detail, UT_Rating, UT_FindText)
-  LV_Modify(selRow - 1, "Focus Select")
-Return
+UltimatumMoveUp(*) {
+    global UltimatumLV
+    sel := UltimatumLV.GetNext(0, "F")
+    if sel <= 1
+        return
+    d := UltimatumGetRowData(UltimatumLV, sel)
+    UltimatumLV.Delete(sel)
+    UltimatumLV.Insert(sel - 1, "", d.name, d.tier, d.detail, d.rating, d.ft)
+    UltimatumLV.Modify(sel - 1, "Focus Select")
+}
 
 ; ─────────────────────────────────────────────────────────────────────────────
 ; Move selected row one position down
 ; ─────────────────────────────────────────────────────────────────────────────
-MoveUltimatumDown:
-  Gui, UltimatumUI: Default
-  selRow := LV_GetNext(0, "F")
-  If (selRow = 0 || selRow >= LV_GetCount())
-    Return
-  LV_GetText(UT_Name,     selRow, 1)
-  LV_GetText(UT_Tier,     selRow, 2)
-  LV_GetText(UT_Detail,   selRow, 3)
-  LV_GetText(UT_Rating,   selRow, 4)
-  LV_GetText(UT_FindText, selRow, 5)
-  LV_Delete(selRow)
-  LV_Insert(selRow + 1, "", UT_Name, UT_Tier, UT_Detail, UT_Rating, UT_FindText)
-  LV_Modify(selRow + 1, "Focus Select")
-Return
+UltimatumMoveDown(*) {
+    global UltimatumLV
+    sel := UltimatumLV.GetNext(0, "F")
+    if !sel || sel >= UltimatumLV.GetCount()
+        return
+    d := UltimatumGetRowData(UltimatumLV, sel)
+    UltimatumLV.Delete(sel)
+    UltimatumLV.Insert(sel + 1, "", d.name, d.tier, d.detail, d.rating, d.ft)
+    UltimatumLV.Modify(sel + 1, "Focus Select")
+}
 
 ; ─────────────────────────────────────────────────────────────────────────────
-; Duplicate selected row and insert the copy immediately below it
+; Duplicate selected row and insert the copy immediately below
 ; ─────────────────────────────────────────────────────────────────────────────
-DuplicateUltimatumRow:
-  Gui, UltimatumUI: Default
-  selRow := LV_GetNext(0, "F")
-  If (selRow = 0)
-    Return
-  LV_GetText(UT_Name,     selRow, 1)
-  LV_GetText(UT_Tier,     selRow, 2)
-  LV_GetText(UT_Detail,   selRow, 3)
-  LV_GetText(UT_Rating,   selRow, 4)
-  LV_GetText(UT_FindText, selRow, 5)
-  LV_Insert(selRow + 1, "", UT_Name, UT_Tier, UT_Detail, UT_Rating, UT_FindText)
-  LV_Modify(selRow + 1, "Focus Select")
-Return
+UltimatumDuplicateRow(*) {
+    global UltimatumLV
+    sel := UltimatumLV.GetNext(0, "F")
+    if !sel
+        return
+    d := UltimatumGetRowData(UltimatumLV, sel)
+    UltimatumLV.Insert(sel + 1, "", d.name, d.tier, d.detail, d.rating, d.ft)
+    UltimatumLV.Modify(sel + 1, "Focus Select")
+}
 
 ; ─────────────────────────────────────────────────────────────────────────────
-; Test Detection – take one FindText screenshot, search each row's FindText
-; string against that cached frame, and optionally flash a highlight box.
-; YesUltimatumShowHighlight gates the visual feedback; set to 0 for automation.
+; Test Detection – capture full screen with FindText, search each row's string,
+; optionally flash highlights and display the captured screenshot.
 ; ─────────────────────────────────────────────────────────────────────────────
-UltimatumTestDetection:
-  Gui, UltimatumUI: Submit, NoHide
+UltimatumTestDetection(*) {
+    global UltimatumLV, YesUltimatumShowHighlight, YesUltimatumShowScreenshot
 
-  ; Optionally capture screen for display after detection
-  UT_TempImg := ""
-  If (YesUltimatumShowScreenshot)
-  {
-    UT_TempImg := A_Temp "\WR_UltimatumDebug.png"
-    pToken := Gdip_Startup()
-    pBitmap := Gdip_BitmapFromScreen(0)
-    Gdip_SaveBitmapToFile(pBitmap, UT_TempImg)
-    Gdip_DisposeImage(pBitmap)
-    Gdip_Shutdown(pToken)
-  }
-
-  ; Capture the full screen once; subsequent FindText calls reuse this frame
-  FindText.ScreenShot(0, 0, A_ScreenWidth, A_ScreenHeight)
-
-  Gui, UltimatumUI: Default
-  UT_TotalRows := LV_GetCount()
-  UT_FoundCount := 0
-
-  Loop % UT_TotalRows
-  {
-    LV_GetText(UT_FTStr,   A_Index, 5)
-    LV_GetText(UT_ModName, A_Index, 1)
-    If (UT_FTStr = "")
-      Continue
-    ; ScreenShot=0 reuses the cached frame taken above
-    ok := FindText(0, 0, A_ScreenWidth, A_ScreenHeight, 0.1, 0.1, UT_FTStr, 0)
-    If (ok)
-    {
-      UT_FoundCount++
-      If (YesUltimatumShowHighlight)
-        MouseTip(ok[1].1, ok[1].2, ok[1].3, ok[1].4)
+    ; Optionally save a screenshot for display after detection
+    tempImg := ""
+    if YesUltimatumShowScreenshot {
+        tempImg := A_Temp "\WR_UltimatumDebug.PNG"
+        pToken  := Gdip_Startup()
+        pBitmap := Gdip_BitmapFromScreen(0)
+        Gdip_SaveBitmapToFile(pBitmap, tempImg)
+        Gdip_DisposeImage(pBitmap)
     }
-  }
 
-  ToolTip, % "Ultimatum Detection: " UT_FoundCount "/" UT_TotalRows " icons found"
-  SetTimer, UltimatumDetectionTooltipOff, -2000
+    ; Capture full screen once; reuse cached frame for all FindText calls
+    FindText.ScreenShot(0, 0, A_ScreenWidth, A_ScreenHeight)
 
-  If (UT_TempImg != "")
-  {
-    Gui, UltimatumScreenUI: New
-    Gui, UltimatumScreenUI: +AlwaysOnTop
-    Gui, UltimatumScreenUI: Add, Picture, w1280 h720, %UT_TempImg%
-    Gui, UltimatumScreenUI: Show, , Ultimatum Detection Screenshot
-  }
-Return
+    total := UltimatumLV.GetCount()
+    found := 0
+    Loop total {
+        ftStr := UltimatumLV.GetText(A_Index, 5)
+        if ftStr = ""
+            continue
+        ok := FindText(0, 0, A_ScreenWidth, A_ScreenHeight, 0.1, 0.1, ftStr, 0)
+        if ok {
+            found++
+            if YesUltimatumShowHighlight
+                MouseTip(ok[1].1, ok[1].2, ok[1].3, ok[1].4)
+        }
+    }
 
-UltimatumDetectionTooltipOff:
-  ToolTip
-Return
+    ToolTip("Ultimatum Detection: " found "/" total " icons found")
+    SetTimer(() => ToolTip(), -2000)
 
-SaveUltimatumHighlight:
-  Gui, UltimatumUI: Submit, NoHide
-  IniWrite, %YesUltimatumShowHighlight%, %A_ScriptDir%\save\Settings.ini, Automation, YesUltimatumShowHighlight
-Return
+    if tempImg != "" {
+        sGui := Gui()
+        sGui.Opt("+AlwaysOnTop")
+        sGui.Title := "Ultimatum Detection Screenshot"
+        sGui.Add("Picture", "w1280 h720", tempImg)
+        sGui.Show()
+    }
+}
 
-SaveUltimatumScreenshot:
-  Gui, UltimatumUI: Submit, NoHide
-  IniWrite, %YesUltimatumShowScreenshot%, %A_ScriptDir%\save\Settings.ini, Automation, YesUltimatumShowScreenshot
-Return
+UltimatumSaveHighlight(cb, *) {
+    global YesUltimatumShowHighlight
+    YesUltimatumShowHighlight := cb.Value
+    IniWrite(YesUltimatumShowHighlight, A_ScriptDir "\save\Settings.ini", "Automation", "YesUltimatumShowHighlight")
+}
+
+UltimatumSaveScreenshot(cb, *) {
+    global YesUltimatumShowScreenshot
+    YesUltimatumShowScreenshot := cb.Value
+    IniWrite(YesUltimatumShowScreenshot, A_ScriptDir "\save\Settings.ini", "Automation", "YesUltimatumShowScreenshot")
+}
 
 ; ─────────────────────────────────────────────────────────────────────────────
-; Persist the current ListView rows to a JSON file chosen by the user
+; Collect ListView rows into WR.UltimatumMods.Modifiers
 ; ─────────────────────────────────────────────────────────────────────────────
-SaveUltimatumJson:
-  Gui, UltimatumUI: Default
-  WR.UltimatumMods.Modifiers := []
-  rowCount := LV_GetCount()
-  Loop % rowCount
-  {
-    LV_GetText(UT_Name,     A_Index, 1)
-    LV_GetText(UT_Tier,     A_Index, 2)
-    LV_GetText(UT_Detail,   A_Index, 3)
-    LV_GetText(UT_Rating,   A_Index, 4)
-    LV_GetText(UT_FindText, A_Index, 5)
-    aux := {"ModifierName": UT_Name, "Tier": UT_Tier, "Detail": UT_Detail
-          , "Rating": UT_Rating, "FindText": UT_FindText}
-    WR.UltimatumMods.Modifiers.Push(aux)
-  }
-  UT_SaveDir := A_ScriptDir "\save\automation\ultimatum"
-  FileCreateDir, %UT_SaveDir%
-  SplitPath, UltimatumModsJsonPath, UT_ShortName
-  FileSelectFile, UT_SavePath, S16, %UT_SaveDir%\%UT_ShortName%
-    , Save Modifier Json, JSON Files (*.json)
-  If (UT_SavePath = "")
-    Return
-  FileDelete, %UT_SavePath%
-  FileAppend, % JSON.Dump(WR.UltimatumMods.Modifiers,, 2), %UT_SavePath%
-  UltimatumModsJsonPath := UT_SavePath
-  IniWrite, %UltimatumModsJsonPath%, %A_ScriptDir%\save\Settings.ini, Automation, UltimatumModsJsonPath
-  SplitPath, UltimatumModsJsonPath, UT_ShortName
-  GuiControl,, UltimatumLoadedFile, %UT_ShortName%
-Return
+UltimatumCollectRows() {
+    global UltimatumLV, WR
+    WR.UltimatumMods.Modifiers := []
+    Loop UltimatumLV.GetCount() {
+        WR.UltimatumMods.Modifiers.Push({
+            ModifierName: UltimatumLV.GetText(A_Index, 1),
+            Tier:         UltimatumLV.GetText(A_Index, 2),
+            Detail:       UltimatumLV.GetText(A_Index, 3),
+            Rating:       UltimatumLV.GetText(A_Index, 4),
+            FindText:     UltimatumLV.GetText(A_Index, 5)
+        })
+    }
+}
+
+; ─────────────────────────────────────────────────────────────────────────────
+; Persist the current ListView rows to a user-chosen JSON file
+; ─────────────────────────────────────────────────────────────────────────────
+UltimatumSaveJson(*) {
+    global UltimatumLV, UltimatumFileLbl, WR, UltimatumModsJsonPath
+    UltimatumCollectRows()
+    saveDir := A_ScriptDir "\save\automation\ultimatum"
+    DirCreate(saveDir)
+    SplitPath(UltimatumModsJsonPath, &shortName)
+    savePath := FileSelect("S16", saveDir "\" shortName, "Save Modifier Json", "JSON Files (*.json)")
+    if savePath = ""
+        return
+    FileDelete(savePath)
+    FileAppend(JSON.Dump(WR.UltimatumMods.Modifiers,, 2), savePath)
+    UltimatumModsJsonPath := savePath
+    IniWrite(UltimatumModsJsonPath, A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumModsJsonPath")
+    SplitPath(UltimatumModsJsonPath, &shortName)
+    UltimatumFileLbl.Text := shortName
+}
 
 ; ─────────────────────────────────────────────────────────────────────────────
 ; Load the bundled default JSON without a file-selection dialog
 ; ─────────────────────────────────────────────────────────────────────────────
-LoadUltimatumDefaults:
-  UT_DefaultPath := A_ScriptDir "\data\default save data\automation\ultimatum\default_UltimatumMods.json"
-  UltimatumLoadFromPath(UT_DefaultPath)
-  UltimatumModsJsonPath := UT_DefaultPath
-  IniWrite, %UltimatumModsJsonPath%, %A_ScriptDir%\save\Settings.ini, Automation, UltimatumModsJsonPath
-  Gui, UltimatumUI: Default
-  LV_Delete()
-  UltimatumRefreshList()
-  Loop % LV_GetCount("Column")
-    LV_ModifyCol(A_Index, "AutoHdr")
-  SplitPath, UltimatumModsJsonPath, UT_ShortName
-  GuiControl,, UltimatumLoadedFile, %UT_ShortName%
-Return
+UltimatumLoadDefaults(*) {
+    global UltimatumLV, UltimatumFileLbl, WR, UltimatumModsJsonPath
+    defaultPath := A_ScriptDir "\data\default save data\automation\ultimatum\default_UltimatumMods.json"
+    UltimatumLoadFromPath(defaultPath)
+    UltimatumModsJsonPath := defaultPath
+    IniWrite(UltimatumModsJsonPath, A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumModsJsonPath")
+    UltimatumLV.Delete()
+    UltimatumRefreshList()
+    Loop UltimatumLV.GetCount("Column")
+        UltimatumLV.ModifyCol(A_Index, "AutoHdr")
+    SplitPath(UltimatumModsJsonPath, &shortName)
+    UltimatumFileLbl.Text := shortName
+}
 
 ; ─────────────────────────────────────────────────────────────────────────────
 ; Load modifier rows from a user-selected JSON file
 ; ─────────────────────────────────────────────────────────────────────────────
-LoadUltimatumJson:
-  UT_SaveDir := A_ScriptDir "\save\automation\ultimatum"
-  FileCreateDir, %UT_SaveDir%
-  FileSelectFile, UT_LoadPath, 3, %UT_SaveDir%\
-    , Load Modifier Json, JSON Files (*.json)
-  If (UT_LoadPath = "")
-    Return
-  Try {
-    obj := JSON.Load(FileOpen(UT_LoadPath, "r").Read())
-  } Catch e {
-    MsgBox, 262144, Error loading Ultimatum mods, % e
-    Return
-  }
-  WR.UltimatumMods.Modifiers := obj
-  UltimatumModsJsonPath := UT_LoadPath
-  IniWrite, %UltimatumModsJsonPath%, %A_ScriptDir%\save\Settings.ini, Automation, UltimatumModsJsonPath
-  Gui, UltimatumUI: Default
-  LV_Delete()
-  UltimatumRefreshList()
-  Loop % LV_GetCount("Column")
-    LV_ModifyCol(A_Index, "AutoHdr")
-  SplitPath, UltimatumModsJsonPath, UT_ShortName
-  GuiControl,, UltimatumLoadedFile, %UT_ShortName%
-Return
-
-; ─────────────────────────────────────────────────────────────────────────────
-; Populate ListView from WR.UltimatumMods.Modifiers (call with UltimatumUI as default)
-; ─────────────────────────────────────────────────────────────────────────────
-UltimatumRefreshList()
-{
-  For k, v in WR.UltimatumMods.Modifiers
-    LV_Add("", v["ModifierName"], v["Tier"], v["Detail"], v["Rating"], v["FindText"])
+UltimatumLoadJson(*) {
+    global UltimatumLV, UltimatumFileLbl, WR, UltimatumModsJsonPath
+    saveDir := A_ScriptDir "\save\automation\ultimatum"
+    DirCreate(saveDir)
+    loadPath := FileSelect(1, saveDir "\", "Load Modifier Json", "JSON Files (*.json)")
+    if loadPath = ""
+        return
+    try
+        obj := JSON.Load(FileOpen(loadPath, "r").Read())
+    catch as e {
+        MsgBox("Error loading Ultimatum mods: " e.Message, "Error", "IconX")
+        return
+    }
+    WR.UltimatumMods.Modifiers := obj
+    UltimatumModsJsonPath := loadPath
+    IniWrite(UltimatumModsJsonPath, A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumModsJsonPath")
+    UltimatumLV.Delete()
+    UltimatumRefreshList()
+    Loop UltimatumLV.GetCount("Column")
+        UltimatumLV.ModifyCol(A_Index, "AutoHdr")
+    SplitPath(UltimatumModsJsonPath, &shortName)
+    UltimatumFileLbl.Text := shortName
 }
