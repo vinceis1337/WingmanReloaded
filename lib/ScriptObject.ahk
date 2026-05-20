@@ -94,6 +94,7 @@ WR.CustomMapMods.MapMods := []
 WR.CustomMapMods.HeistMods := []
 WR.UltimatumMods.Modifiers := []
 Global YesUltimatumShowHighlight := 1
+Global YesUltimatumShowScreenshot := 0
 
 for _k,_v in POEData
 {

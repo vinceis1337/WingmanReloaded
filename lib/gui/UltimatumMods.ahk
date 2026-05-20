@@ -46,6 +46,7 @@ UltimatumModsUI:
   Gui, UltimatumUI: Add, Button, gDuplicateUltimatumRow w120 h28 x+5,        Duplicate Row
   Gui, UltimatumUI: Add, Button, gUltimatumTestDetection w130 h28 xs+5 y+8,  Test Detection
   Gui, UltimatumUI: Add, CheckBox, gSaveUltimatumHighlight vYesUltimatumShowHighlight Checked%YesUltimatumShowHighlight% x+8 yp+6, Show Highlight
+  Gui, UltimatumUI: Add, CheckBox, gSaveUltimatumScreenshot vYesUltimatumShowScreenshot Checked%YesUltimatumShowScreenshot% x+8 yp, Show Screenshot
 
   Gui, UltimatumUI: Show, , Ultimatum Modifier Manager
 Return
@@ -182,6 +183,18 @@ Return
 UltimatumTestDetection:
   Gui, UltimatumUI: Submit, NoHide
 
+  ; Optionally capture screen for display after detection
+  UT_TempImg := ""
+  If (YesUltimatumShowScreenshot)
+  {
+    UT_TempImg := A_Temp "\WR_UltimatumDebug.png"
+    pToken := Gdip_Startup()
+    pBitmap := Gdip_BitmapFromScreen(0)
+    Gdip_SaveBitmapToFile(pBitmap, UT_TempImg)
+    Gdip_DisposeImage(pBitmap)
+    Gdip_Shutdown(pToken)
+  }
+
   ; Capture the full screen once; subsequent FindText calls reuse this frame
   FindText.ScreenShot(0, 0, A_ScreenWidth, A_ScreenHeight)
 
@@ -207,6 +220,14 @@ UltimatumTestDetection:
 
   ToolTip, % "Ultimatum Detection: " UT_FoundCount "/" UT_TotalRows " icons found"
   SetTimer, UltimatumDetectionTooltipOff, -2000
+
+  If (UT_TempImg != "")
+  {
+    Gui, UltimatumScreenUI: New
+    Gui, UltimatumScreenUI: +AlwaysOnTop
+    Gui, UltimatumScreenUI: Add, Picture, w1280 h720, %UT_TempImg%
+    Gui, UltimatumScreenUI: Show, , Ultimatum Detection Screenshot
+  }
 Return
 
 UltimatumDetectionTooltipOff:
@@ -216,6 +237,11 @@ Return
 SaveUltimatumHighlight:
   Gui, UltimatumUI: Submit, NoHide
   IniWrite, %YesUltimatumShowHighlight%, %A_ScriptDir%\save\Settings.ini, Automation, YesUltimatumShowHighlight
+Return
+
+SaveUltimatumScreenshot:
+  Gui, UltimatumUI: Submit, NoHide
+  IniWrite, %YesUltimatumShowScreenshot%, %A_ScriptDir%\save\Settings.ini, Automation, YesUltimatumShowScreenshot
 Return
 
 ; ─────────────────────────────────────────────────────────────────────────────

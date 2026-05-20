@@ -727,6 +727,7 @@ readFromFile(){
 		UltimatumModsJsonPath := A_ScriptDir "\data\default save data\automation\ultimatum\default_UltimatumMods.json"
 	UltimatumLoadFromPath(UltimatumModsJsonPath)
 	YesUltimatumShowHighlight := IniRead(A_ScriptDir "\save\Settings.ini", "Automation", "YesUltimatumShowHighlight", 1)
+	YesUltimatumShowScreenshot := IniRead(A_ScriptDir "\save\Settings.ini", "Automation", "YesUltimatumShowScreenshot", 0)
 
 	Thread("NoTimers", false) ;End Critical
 	Return
