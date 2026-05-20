@@ -720,6 +720,13 @@ readFromFile(){
 	UnRegisterHotkeys()
 	RegisterHotkeys()
 	checkActiveType()
+
+	; Automation – remember which Ultimatum mods JSON was last loaded
+	UltimatumModsJsonPath := IniRead(A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumModsJsonPath", "")
+	If (UltimatumModsJsonPath = "")
+		UltimatumModsJsonPath := A_ScriptDir "\data\default save data\automation\ultimatum\default_UltimatumMods.json"
+	UltimatumLoadFromPath(UltimatumModsJsonPath)
+
 	Thread("NoTimers", false) ;End Critical
 	Return
 }

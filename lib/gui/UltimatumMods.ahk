@@ -3,6 +3,22 @@
 UltimatumRowNumber := 0
 
 ; ─────────────────────────────────────────────────────────────────────────────
+; Load JSON from path into WR.UltimatumMods.Modifiers (silent on missing file)
+; ─────────────────────────────────────────────────────────────────────────────
+UltimatumLoadFromPath(path)
+{
+  global WR
+  If (!FileExist(path))
+    Return
+  Try {
+    obj := JSON.Load(FileOpen(path, "r").Read())
+  } Catch {
+    Return
+  }
+  WR.UltimatumMods.Modifiers := obj
+}
+
+; ─────────────────────────────────────────────────────────────────────────────
 ; Open / Rebuild the Ultimatum Modifier Manager window
 ; ─────────────────────────────────────────────────────────────────────────────
 UltimatumModsUI:
@@ -15,16 +31,18 @@ UltimatumModsUI:
   Loop % LV_GetCount("Column")
     LV_ModifyCol(A_Index, "AutoHdr")
 
-  ; Row 1 – persistence buttons
-  Gui, UltimatumUI: Add, Button, gSaveUltimatumJson   w160 h30,       Save Modifier Json
-  Gui, UltimatumUI: Add, Button, gLoadUltimatumJson   w160 h30 x+5,   Load Modifier Json
+  ; Row 1 – persistence buttons + loaded-file indicator
+  Gui, UltimatumUI: Add, Button, gSaveUltimatumJson w160 h30,      Save Modifier Json
+  Gui, UltimatumUI: Add, Button, gLoadUltimatumJson w160 h30 x+5,  Load Modifier Json
+  SplitPath, UltimatumModsJsonPath, UT_ShortName
+  Gui, UltimatumUI: Add, Text, vUltimatumLoadedFile x+10 yp+8, %UT_ShortName%
 
   ; Row 2 – Debug tools GroupBox
-  Gui, UltimatumUI: Add, GroupBox, Section w600 h55 xs y+8, Debug
-  Gui, UltimatumUI: Add, Button, gAddUltimatumRow      w115 h28 xs+5 ys+18, Add Modifier
-  Gui, UltimatumUI: Add, Button, gMoveUltimatumUp      w100 h28 x+5,        Move Up
-  Gui, UltimatumUI: Add, Button, gMoveUltimatumDown    w100 h28 x+5,        Move Down
-  Gui, UltimatumUI: Add, Button, gDuplicateUltimatumRow w120 h28 x+5,       Duplicate Row
+  Gui, UltimatumUI: Add, GroupBox, Section w600 h55 xs y+10, Debug
+  Gui, UltimatumUI: Add, Button, gAddUltimatumRow       w115 h28 xs+5 ys+18, Add Modifier
+  Gui, UltimatumUI: Add, Button, gMoveUltimatumUp       w100 h28 x+5,        Move Up
+  Gui, UltimatumUI: Add, Button, gMoveUltimatumDown     w100 h28 x+5,        Move Down
+  Gui, UltimatumUI: Add, Button, gDuplicateUltimatumRow w120 h28 x+5,        Duplicate Row
 
   Gui, UltimatumUI: Show, , Ultimatum Modifier Manager
 Return
@@ -46,19 +64,19 @@ UltimatumListViewClick:
 
     Gui, UltimatumEditUI: New
     Gui, UltimatumEditUI: +AlwaysOnTop -MinimizeBox
-    Gui, UltimatumEditUI: Add, Text,        Section,            Modifier Name:
-    Gui, UltimatumEditUI: Add, Edit,        vUT_Edit_Name w240 xs y+3,    %UT_Name%
-    Gui, UltimatumEditUI: Add, Text,        xs y+8,             Tier:
-    Gui, UltimatumEditUI: Add, Edit,        vUT_Edit_Tier w80  xs y+3,    %UT_Tier%
-    Gui, UltimatumEditUI: Add, Text,        xs y+8,             Detail:
-    Gui, UltimatumEditUI: Add, Edit,        vUT_Edit_Detail w380 xs y+3,  %UT_Detail%
-    Gui, UltimatumEditUI: Add, Text,        xs y+8,             Rating:
-    Gui, UltimatumEditUI: Add, DropDownList, vUT_Edit_Rating xs y+3,      Easy|Manageable|Hard|Deadly
+    Gui, UltimatumEditUI: Add, Text,         Section,                Modifier Name:
+    Gui, UltimatumEditUI: Add, Edit,         vUT_Edit_Name w240 xs y+3,       %UT_Name%
+    Gui, UltimatumEditUI: Add, Text,         xs y+8,                 Tier:
+    Gui, UltimatumEditUI: Add, Edit,         vUT_Edit_Tier w80 xs y+3,        %UT_Tier%
+    Gui, UltimatumEditUI: Add, Text,         xs y+8,                 Detail:
+    Gui, UltimatumEditUI: Add, Edit,         vUT_Edit_Detail w380 xs y+3,     %UT_Detail%
+    Gui, UltimatumEditUI: Add, Text,         xs y+8,                 Rating:
+    Gui, UltimatumEditUI: Add, DropDownList, vUT_Edit_Rating xs y+3,          Easy|Manageable|Hard|Deadly
     GuiControl, UltimatumEditUI: ChooseString, UT_Edit_Rating, %UT_Rating%
-    Gui, UltimatumEditUI: Add, Text,        xs y+8,             FindText:
-    Gui, UltimatumEditUI: Add, Edit,        vUT_Edit_FindText w380 xs y+3 r3, %UT_FindText%
-    Gui, UltimatumEditUI: Add, Button,      gSaveUltimatumRow  w120 h28 xs y+10, Save
-    Gui, UltimatumEditUI: Add, Button,      gDeleteUltimatumRow w120 h28 x+5,    Delete Row
+    Gui, UltimatumEditUI: Add, Text,         xs y+8,                 FindText:
+    Gui, UltimatumEditUI: Add, Edit,         vUT_Edit_FindText w380 xs y+3 r3, %UT_FindText%
+    Gui, UltimatumEditUI: Add, Button,       gSaveUltimatumRow  w120 h28 xs y+10, Save
+    Gui, UltimatumEditUI: Add, Button,       gDeleteUltimatumRow w120 h28 x+5,    Delete Row
     Gui, UltimatumEditUI: Show, , Edit Ultimatum Modifier
   }
 Return
@@ -124,8 +142,6 @@ MoveUltimatumDown:
   LV_GetText(UT_Rating,   selRow, 4)
   LV_GetText(UT_FindText, selRow, 5)
   LV_Delete(selRow)
-  ; After deletion row selRow+1 is now at selRow; insert before selRow+1
-  ; to place the item after what was the next row
   LV_Insert(selRow + 1, "", UT_Name, UT_Tier, UT_Detail, UT_Rating, UT_FindText)
   LV_Modify(selRow + 1, "Focus Select")
 Return
@@ -165,19 +181,23 @@ SaveUltimatumJson:
           , "Rating": UT_Rating, "FindText": UT_FindText}
     WR.UltimatumMods.Modifiers.Push(aux)
   }
-  FileSelectFile, UT_SavePath, S16, %A_ScriptDir%\save\UltimatumMods.json
+  FileSelectFile, UT_SavePath, S16, %UltimatumModsJsonPath%
     , Save Modifier Json, JSON Files (*.json)
   If (UT_SavePath = "")
     Return
   FileDelete, %UT_SavePath%
   FileAppend, % JSON.Dump(WR.UltimatumMods.Modifiers,, 2), %UT_SavePath%
+  UltimatumModsJsonPath := UT_SavePath
+  IniWrite, %UltimatumModsJsonPath%, %A_ScriptDir%\save\Settings.ini, Automation, UltimatumModsJsonPath
+  SplitPath, UltimatumModsJsonPath, UT_ShortName
+  GuiControl,, UltimatumLoadedFile, %UT_ShortName%
 Return
 
 ; ─────────────────────────────────────────────────────────────────────────────
 ; Load modifier rows from a user-selected JSON file
 ; ─────────────────────────────────────────────────────────────────────────────
 LoadUltimatumJson:
-  FileSelectFile, UT_LoadPath, 3, %A_ScriptDir%\save\UltimatumMods.json
+  FileSelectFile, UT_LoadPath, 3, %UltimatumModsJsonPath%
     , Load Modifier Json, JSON Files (*.json)
   If (UT_LoadPath = "")
     Return
@@ -188,11 +208,15 @@ LoadUltimatumJson:
     Return
   }
   WR.UltimatumMods.Modifiers := obj
+  UltimatumModsJsonPath := UT_LoadPath
+  IniWrite, %UltimatumModsJsonPath%, %A_ScriptDir%\save\Settings.ini, Automation, UltimatumModsJsonPath
   Gui, UltimatumUI: Default
   LV_Delete()
   UltimatumRefreshList()
   Loop % LV_GetCount("Column")
     LV_ModifyCol(A_Index, "AutoHdr")
+  SplitPath, UltimatumModsJsonPath, UT_ShortName
+  GuiControl,, UltimatumLoadedFile, %UT_ShortName%
 Return
 
 ; ─────────────────────────────────────────────────────────────────────────────
