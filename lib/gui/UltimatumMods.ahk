@@ -181,7 +181,9 @@ SaveUltimatumJson:
           , "Rating": UT_Rating, "FindText": UT_FindText}
     WR.UltimatumMods.Modifiers.Push(aux)
   }
-  FileSelectFile, UT_SavePath, S16, %UltimatumModsJsonPath%
+  UT_SaveDir := A_ScriptDir "\save\automation\ultimatum"
+  FileCreateDir, %UT_SaveDir%
+  FileSelectFile, UT_SavePath, S16, %UT_SaveDir%\
     , Save Modifier Json, JSON Files (*.json)
   If (UT_SavePath = "")
     Return
@@ -197,7 +199,9 @@ Return
 ; Load modifier rows from a user-selected JSON file
 ; ─────────────────────────────────────────────────────────────────────────────
 LoadUltimatumJson:
-  FileSelectFile, UT_LoadPath, 3, %UltimatumModsJsonPath%
+  UT_SaveDir := A_ScriptDir "\save\automation\ultimatum"
+  FileCreateDir, %UT_SaveDir%
+  FileSelectFile, UT_LoadPath, 3, %UT_SaveDir%\
     , Load Modifier Json, JSON Files (*.json)
   If (UT_LoadPath = "")
     Return
