@@ -26,7 +26,7 @@ UltimatumModsUI:
   Gui, UltimatumUI: Default
   Gui, UltimatumUI: +AlwaysOnTop -MinimizeBox
   Gui, UltimatumUI: Add, ListView, w950 h400 -wrap -Multi Grid gUltimatumListViewClick vUltimatumListView
-    , Modifier Name|Tier|Detail|Rating|Icon File
+    , Modifier Name|Tier|Detail|Rating|FindText
   UltimatumRefreshList()
   Loop % LV_GetCount("Column")
     LV_ModifyCol(A_Index, "AutoHdr")
@@ -76,9 +76,9 @@ UltimatumListViewClick:
     Gui, UltimatumEditUI: Add, Text,         xs y+8,                 Rating:
     Gui, UltimatumEditUI: Add, DropDownList, vUT_Edit_Rating xs y+3,          Easy|Manageable|Hard|Deadly
     GuiControl, UltimatumEditUI: ChooseString, UT_Edit_Rating, %UT_Rating%
-    Gui, UltimatumEditUI: Add, Text,         xs y+8,                 Icon File:
-    Gui, UltimatumEditUI: Add, Edit,         vUT_Edit_FindText w340 xs y+3 r1, %UT_FindText%
-    Gui, UltimatumEditUI: Add, Button,       gBrowseUltimatumIconFile w35 h20 x+3 yp, ...
+    Gui, UltimatumEditUI: Add, Text,         xs y+8,                 FindText:
+    Gui, UltimatumEditUI: Add, Edit,         vUT_Edit_FindText w310 xs y+3 r1, %UT_FindText%
+    Gui, UltimatumEditUI: Add, Button,       gOpenUltimatumFTCapture w65 h20 x+3 yp, Capture
     Gui, UltimatumEditUI: Add, Button,       gSaveUltimatumRow  w120 h28 xs y+10, Save
     Gui, UltimatumEditUI: Add, Button,       gDeleteUltimatumRow w120 h28 x+5,    Delete Row
     Gui, UltimatumEditUI: Show, , Edit Ultimatum Modifier
@@ -105,14 +105,10 @@ DeleteUltimatumRow:
 Return
 
 ; ─────────────────────────────────────────────────────────────────────────────
-; Browse for an icon file and paste its path into the Icon File edit
+; Open the FindText capture tool so the user can generate a FindText string
 ; ─────────────────────────────────────────────────────────────────────────────
-BrowseUltimatumIconFile:
-  FileSelectFile, UT_IconPath, 3,, Select Icon File
-  If (UT_IconPath = "")
-    Return
-  Gui, UltimatumEditUI: Default
-  GuiControl,, UT_Edit_FindText, %UT_IconPath%
+OpenUltimatumFTCapture:
+  GoSub, ft_Start
 Return
 
 ; ─────────────────────────────────────────────────────────────────────────────
@@ -179,16 +175,15 @@ DuplicateUltimatumRow:
 Return
 
 ; ─────────────────────────────────────────────────────────────────────────────
-; Test Detection – capture screen in memory via GDI+, ImageSearch each row
-; that has an Icon File, and optionally flash a highlight box over matches.
+; Test Detection – take one FindText screenshot, search each row's FindText
+; string against that cached frame, and optionally flash a highlight box.
 ; YesUltimatumShowHighlight gates the visual feedback; set to 0 for automation.
 ; ─────────────────────────────────────────────────────────────────────────────
 UltimatumTestDetection:
   Gui, UltimatumUI: Submit, NoHide
 
-  ; Capture the full virtual screen into a GDI+ bitmap held in memory only
-  UT_pToken  := Gdip_Startup()
-  UT_pBitmap := Gdip_BitmapFromScreen(0)
+  ; Capture the full screen once; subsequent FindText calls reuse this frame
+  FindText.ScreenShot(0, 0, A_ScreenWidth, A_ScreenHeight)
 
   Gui, UltimatumUI: Default
   UT_TotalRows := LV_GetCount()
@@ -196,24 +191,19 @@ UltimatumTestDetection:
 
   Loop % UT_TotalRows
   {
-    LV_GetText(UT_IconFile, A_Index, 5)
-    LV_GetText(UT_ModName,  A_Index, 1)
-    If (UT_IconFile = "" || !FileExist(UT_IconFile))
+    LV_GetText(UT_FTStr,   A_Index, 5)
+    LV_GetText(UT_ModName, A_Index, 1)
+    If (UT_FTStr = "")
       Continue
-    ImageSearch, UT_FoundX, UT_FoundY
-      , 0, 0, %A_ScreenWidth%, %A_ScreenHeight%
-      , *50 %UT_IconFile%
-    If (ErrorLevel = 0)
+    ; ScreenShot=0 reuses the cached frame taken above
+    ok := FindText(0, 0, A_ScreenWidth, A_ScreenHeight, 0.1, 0.1, UT_FTStr, 0)
+    If (ok)
     {
       UT_FoundCount++
       If (YesUltimatumShowHighlight)
-        MouseTip(UT_FoundX, UT_FoundY, 32, 32)
+        MouseTip(ok[1].1, ok[1].2, ok[1].3, ok[1].4)
     }
   }
-
-  ; Release the in-memory screenshot
-  Gdip_DisposeImage(UT_pBitmap)
-  Gdip_Shutdown(UT_pToken)
 
   ToolTip, % "Ultimatum Detection: " UT_FoundCount "/" UT_TotalRows " icons found"
   SetTimer, UltimatumDetectionTooltipOff, -2000
