@@ -192,7 +192,6 @@ UltimatumTestDetection:
     pBitmap := Gdip_BitmapFromScreen(0)
     Gdip_SaveBitmapToFile(pBitmap, UT_TempImg)
     Gdip_DisposeImage(pBitmap)
-    Gdip_Shutdown(pToken)
   }
 
   ; Capture the full screen once; subsequent FindText calls reuse this frame
