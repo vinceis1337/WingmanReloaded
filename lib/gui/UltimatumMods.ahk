@@ -26,7 +26,7 @@ UltimatumModsUI:
   Gui, UltimatumUI: Default
   Gui, UltimatumUI: +AlwaysOnTop -MinimizeBox
   Gui, UltimatumUI: Add, ListView, w950 h400 -wrap -Multi Grid gUltimatumListViewClick vUltimatumListView
-    , Modifier Name|Tier|Detail|Rating|FindText
+    , Modifier Name|Tier|Detail|Rating|Icon File
   UltimatumRefreshList()
   Loop % LV_GetCount("Column")
     LV_ModifyCol(A_Index, "AutoHdr")
@@ -74,8 +74,9 @@ UltimatumListViewClick:
     Gui, UltimatumEditUI: Add, Text,         xs y+8,                 Rating:
     Gui, UltimatumEditUI: Add, DropDownList, vUT_Edit_Rating xs y+3,          Easy|Manageable|Hard|Deadly
     GuiControl, UltimatumEditUI: ChooseString, UT_Edit_Rating, %UT_Rating%
-    Gui, UltimatumEditUI: Add, Text,         xs y+8,                 FindText:
-    Gui, UltimatumEditUI: Add, Edit,         vUT_Edit_FindText w380 xs y+3 r3, %UT_FindText%
+    Gui, UltimatumEditUI: Add, Text,         xs y+8,                 Icon File:
+    Gui, UltimatumEditUI: Add, Edit,         vUT_Edit_FindText w340 xs y+3 r3, %UT_FindText%
+    Gui, UltimatumEditUI: Add, Button,       gBrowseUltimatumIconFile w35 h20 x+3 yp, ...
     Gui, UltimatumEditUI: Add, Button,       gSaveUltimatumRow  w120 h28 xs y+10, Save
     Gui, UltimatumEditUI: Add, Button,       gDeleteUltimatumRow w120 h28 x+5,    Delete Row
     Gui, UltimatumEditUI: Show, , Edit Ultimatum Modifier
@@ -99,6 +100,17 @@ DeleteUltimatumRow:
   Gui, UltimatumEditUI: Hide
   Gui, UltimatumUI: Default
   LV_Delete(UltimatumRowNumber)
+Return
+
+; ─────────────────────────────────────────────────────────────────────────────
+; Browse for an icon file and paste its path into the Icon File edit
+; ─────────────────────────────────────────────────────────────────────────────
+BrowseUltimatumIconFile:
+  FileSelectFile, UT_IconPath, 3,, Select Icon File
+  If (UT_IconPath = "")
+    Return
+  Gui, UltimatumEditUI: Default
+  GuiControl,, UT_Edit_FindText, %UT_IconPath%
 Return
 
 ; ─────────────────────────────────────────────────────────────────────────────
