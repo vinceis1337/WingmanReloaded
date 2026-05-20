@@ -39,11 +39,13 @@ UltimatumModsUI:
   Gui, UltimatumUI: Add, Text, vUltimatumLoadedFile x+10 yp+8, %UT_ShortName%
 
   ; Row 2 – Debug tools GroupBox
-  Gui, UltimatumUI: Add, GroupBox, Section w600 h55 xs y+10, Debug
+  Gui, UltimatumUI: Add, GroupBox, Section w650 h90 xs y+10, Debug
   Gui, UltimatumUI: Add, Button, gAddUltimatumRow       w115 h28 xs+5 ys+18, Add Modifier
   Gui, UltimatumUI: Add, Button, gMoveUltimatumUp       w100 h28 x+5,        Move Up
   Gui, UltimatumUI: Add, Button, gMoveUltimatumDown     w100 h28 x+5,        Move Down
   Gui, UltimatumUI: Add, Button, gDuplicateUltimatumRow w120 h28 x+5,        Duplicate Row
+  Gui, UltimatumUI: Add, Button, gUltimatumTestDetection w130 h28 xs+5 y+8,  Test Detection
+  Gui, UltimatumUI: Add, CheckBox, gSaveUltimatumHighlight vYesUltimatumShowHighlight Checked%YesUltimatumShowHighlight% x+8 yp+6, Show Highlight
 
   Gui, UltimatumUI: Show, , Ultimatum Modifier Manager
 Return
@@ -174,6 +176,56 @@ DuplicateUltimatumRow:
   LV_GetText(UT_FindText, selRow, 5)
   LV_Insert(selRow + 1, "", UT_Name, UT_Tier, UT_Detail, UT_Rating, UT_FindText)
   LV_Modify(selRow + 1, "Focus Select")
+Return
+
+; ─────────────────────────────────────────────────────────────────────────────
+; Test Detection – capture screen in memory via GDI+, ImageSearch each row
+; that has an Icon File, and optionally flash a highlight box over matches.
+; YesUltimatumShowHighlight gates the visual feedback; set to 0 for automation.
+; ─────────────────────────────────────────────────────────────────────────────
+UltimatumTestDetection:
+  Gui, UltimatumUI: Submit, NoHide
+
+  ; Capture the full virtual screen into a GDI+ bitmap held in memory only
+  UT_pToken  := Gdip_Startup()
+  UT_pBitmap := Gdip_BitmapFromScreen(0)
+
+  Gui, UltimatumUI: Default
+  UT_TotalRows := LV_GetCount()
+  UT_FoundCount := 0
+
+  Loop % UT_TotalRows
+  {
+    LV_GetText(UT_IconFile, A_Index, 5)
+    LV_GetText(UT_ModName,  A_Index, 1)
+    If (UT_IconFile = "" || !FileExist(UT_IconFile))
+      Continue
+    ImageSearch, UT_FoundX, UT_FoundY
+      , 0, 0, %A_ScreenWidth%, %A_ScreenHeight%
+      , *50 %UT_IconFile%
+    If (ErrorLevel = 0)
+    {
+      UT_FoundCount++
+      If (YesUltimatumShowHighlight)
+        MouseTip(UT_FoundX, UT_FoundY, 32, 32)
+    }
+  }
+
+  ; Release the in-memory screenshot
+  Gdip_DisposeImage(UT_pBitmap)
+  Gdip_Shutdown(UT_pToken)
+
+  ToolTip, % "Ultimatum Detection: " UT_FoundCount "/" UT_TotalRows " icons found"
+  SetTimer, UltimatumDetectionTooltipOff, -2000
+Return
+
+UltimatumDetectionTooltipOff:
+  ToolTip
+Return
+
+SaveUltimatumHighlight:
+  Gui, UltimatumUI: Submit, NoHide
+  IniWrite, %YesUltimatumShowHighlight%, %A_ScriptDir%\save\Settings.ini, Automation, YesUltimatumShowHighlight
 Return
 
 ; ─────────────────────────────────────────────────────────────────────────────
