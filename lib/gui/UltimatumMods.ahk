@@ -75,7 +75,7 @@ UltimatumListViewClick:
     Gui, UltimatumEditUI: Add, DropDownList, vUT_Edit_Rating xs y+3,          Easy|Manageable|Hard|Deadly
     GuiControl, UltimatumEditUI: ChooseString, UT_Edit_Rating, %UT_Rating%
     Gui, UltimatumEditUI: Add, Text,         xs y+8,                 Icon File:
-    Gui, UltimatumEditUI: Add, Edit,         vUT_Edit_FindText w340 xs y+3 r3, %UT_FindText%
+    Gui, UltimatumEditUI: Add, Edit,         vUT_Edit_FindText w340 xs y+3 r1, %UT_FindText%
     Gui, UltimatumEditUI: Add, Button,       gBrowseUltimatumIconFile w35 h20 x+3 yp, ...
     Gui, UltimatumEditUI: Add, Button,       gSaveUltimatumRow  w120 h28 xs y+10, Save
     Gui, UltimatumEditUI: Add, Button,       gDeleteUltimatumRow w120 h28 x+5,    Delete Row
