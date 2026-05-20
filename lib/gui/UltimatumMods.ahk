@@ -204,7 +204,8 @@ UltimatumTestDetection(*) {
         ftStr := UltimatumLV.GetText(A_Index, 5)
         if ftStr = ""
             continue
-        ok := FindText(0, 0, A_ScreenWidth, A_ScreenHeight, 0.1, 0.1, ftStr, 0)
+        outX := "", outY := ""
+        ok := FindText(&outX, &outY, 0, 0, A_ScreenWidth, A_ScreenHeight, 0.1, 0.1, ftStr, 0)
         if ok {
             found++
             if YesUltimatumShowHighlight
