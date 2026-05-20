@@ -175,12 +175,16 @@ DuplicateUltimatumRow:
 Return
 
 ; ─────────────────────────────────────────────────────────────────────────────
-; Test Detection – search the full screen for each row's FindText string,
-; taking a fresh screenshot per row (ScreenShot defaults to 1).
+; Test Detection – take one FindText screenshot, search each row's FindText
+; string against that cached frame, and optionally flash a highlight box.
 ; YesUltimatumShowHighlight gates the visual feedback; set to 0 for automation.
 ; ─────────────────────────────────────────────────────────────────────────────
 UltimatumTestDetection:
   Gui, UltimatumUI: Submit, NoHide
+
+  ; Capture the full screen once; subsequent FindText calls reuse this frame
+  FindText.ScreenShot(0, 0, A_ScreenWidth, A_ScreenHeight)
+
   Gui, UltimatumUI: Default
   UT_TotalRows := LV_GetCount()
   UT_FoundCount := 0
@@ -191,7 +195,8 @@ UltimatumTestDetection:
     LV_GetText(UT_ModName, A_Index, 1)
     If (UT_FTStr = "")
       Continue
-    ok := FindText(0, 0, A_ScreenWidth, A_ScreenHeight, 0, 0, UT_FTStr)
+    ; ScreenShot=0 reuses the cached frame taken above
+    ok := FindText(0, 0, A_ScreenWidth, A_ScreenHeight, 0.1, 0.1, UT_FTStr, 0)
     If (ok)
     {
       UT_FoundCount++
