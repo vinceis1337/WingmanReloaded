@@ -319,7 +319,7 @@ UltimatumTestDetection(*) {
         if ftStr = ""
             continue
         outX := "", outY := ""
-        ok := FindText(&outX, &outY, 0, 0, A_ScreenWidth, A_ScreenHeight, 0.1, 0.1, ftStr, 0)
+        ok := FindText(&outX, &outY, 0, 0, A_ScreenWidth, A_ScreenHeight, 0.2, 0.1, ftStr, 0)
         if ok {
             found++
             if YesUltimatumShowHighlight
