@@ -40,12 +40,12 @@ UltimatumModsUI(*) {
 
     ; Second table – Tier Levels
     UltimatumTierLV := UltimatumUI.Add("ListView", "xs y+10 w400 h150 -wrap -Multi Grid",
-        ["Tier Level", "FindText"])
+        ["Icon", "FindText"])
     UltimatumTierLV.OnEvent("DoubleClick", UltimatumTierLVEdit)
     UltimatumRefreshTierList()
     Loop UltimatumTierLV.GetCount("Column")
         UltimatumTierLV.ModifyCol(A_Index, "AutoHdr")
-    UltimatumUI.Add("Button", "xs y+5 w130 h28", "Add Tier Level").OnEvent("Click", UltimatumAddTierLevel)
+    UltimatumUI.Add("Button", "xs y+5 w130 h28", "Add Icon").OnEvent("Click", UltimatumAddTierLevel)
 
     ; Row 1 – persistence buttons + loaded-file label
     SplitPath(UltimatumModsJsonPath, &shortName)
@@ -111,9 +111,9 @@ UltimatumTierLVEdit(ctrl, rowNum, *) {
 
     e := Gui()
     e.Opt("+AlwaysOnTop -MinimizeBox")
-    e.Title := "Edit Tier Level"
+    e.Title := "Edit Icon"
 
-    e.Add("Text",  "Section",          "Tier Level:")
+    e.Add("Text",  "Section",          "Icon:")
     eTL := e.Add("Edit",  "xs y+3 w240",  tierLevel)
 
     e.Add("Text",  "xs y+8",           "FindText:")
@@ -140,7 +140,7 @@ UltimatumDeleteTier(editGui, rowNum, *) {
 
 UltimatumAddTierLevel(*) {
     global UltimatumTierLV
-    UltimatumTierLV.Add("", "New Tier", "")
+    UltimatumTierLV.Add("", "New Icon", "")
     Loop UltimatumTierLV.GetCount("Column")
         UltimatumTierLV.ModifyCol(A_Index, "AutoHdr")
 }
