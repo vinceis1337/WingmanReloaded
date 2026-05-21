@@ -30,6 +30,8 @@ UltimatumModsUI(*) {
     global WR, UltimatumModsJsonPath
     global YesUltimatumShowHighlight, YesUltimatumShowScreenshot, YesUltimatumShowMouseCoords
     global UltimatumErr1, UltimatumErr0
+    global UltimatumDetectBtnName, UltimatumDetectBtnYDelta
+    global UltimatumDetectBtnLeftDX, UltimatumDetectBtnMidDX, UltimatumDetectBtnRightDX
 
     UltimatumUI := Gui()
     UltimatumUI.Opt("+AlwaysOnTop -MinimizeBox")
@@ -84,6 +86,29 @@ UltimatumModsUI(*) {
     UltimatumUI.Add("Text", "x+15 yp+3",   "Err0 (bg):")
     eErr0 := UltimatumUI.Add("Edit", "x+3 yp-3 w55", UltimatumErr0)
     eErr0.OnEvent("Change", (*) => UltimatumSaveErr0(eErr0))
+
+    ; Detect by Button – alternative detection algorithm that hovers each of
+    ; the three on-screen icons (positioned by deltas from a known button)
+    ; and re-runs FindText on a fresh screenshot per hover.
+    UltimatumUI.Add("GroupBox", "Section w700 h120 xs y+10", "Detect by Button")
+    UltimatumUI.Add("Text", "xs+5 ys+22",   "Button Name:")
+    eBN := UltimatumUI.Add("Edit", "x+5 yp-3 w140", UltimatumDetectBtnName)
+    eBN.OnEvent("Change", (*) => UltimatumSaveDetectBtnName(eBN))
+    UltimatumUI.Add("Text", "x+20 yp+3",    "Y Δ:")
+    eYD := UltimatumUI.Add("Edit", "x+5 yp-3 w55", UltimatumDetectBtnYDelta)
+    eYD.OnEvent("Change", (*) => UltimatumSaveDetectBtnYDelta(eYD))
+
+    UltimatumUI.Add("Text", "xs+5 y+10",    "Left X Δ:")
+    eLD := UltimatumUI.Add("Edit", "x+5 yp-3 w55", UltimatumDetectBtnLeftDX)
+    eLD.OnEvent("Change", (*) => UltimatumSaveDetectBtnLeftDX(eLD))
+    UltimatumUI.Add("Text", "x+15 yp+3",    "Middle X Δ:")
+    eMD := UltimatumUI.Add("Edit", "x+5 yp-3 w55", UltimatumDetectBtnMidDX)
+    eMD.OnEvent("Change", (*) => UltimatumSaveDetectBtnMidDX(eMD))
+    UltimatumUI.Add("Text", "x+15 yp+3",    "Right X Δ:")
+    eRD := UltimatumUI.Add("Edit", "x+5 yp-3 w55", UltimatumDetectBtnRightDX)
+    eRD.OnEvent("Change", (*) => UltimatumSaveDetectBtnRightDX(eRD))
+
+    UltimatumUI.Add("Button", "xs+5 y+10 w160 h28", "Detect by Button").OnEvent("Click", UltimatumDetectByButton)
 
     UltimatumUI.Show()
 }
@@ -433,6 +458,20 @@ UltimatumShowMatches(matches) {
 ; Returns a 3-line monospaced string ready for a Text control.
 ; ─────────────────────────────────────────────────────────────────────────────
 UltimatumAnalyzeSelectable(matches) {
+    ; If any match carries a `pos` tag (only Detect-by-Button does this),
+    ; group by position directly instead of guessing from X coordinates.
+    hasPos := false
+    for _, m in matches {
+        if m.HasOwnProp("pos") {
+            hasPos := true
+            break
+        }
+    }
+
+    if hasPos
+        return UltimatumFormatPositionAnalysis(UltimatumGroupByPos(matches))
+
+    ; Fallback (Test Detection path) – derive position from X coordinates.
     mods     := []
     numIcons := []
     for _, m in matches {
@@ -443,30 +482,55 @@ UltimatumAnalyzeSelectable(matches) {
     }
 
     triple := UltimatumFindYTriplet(numIcons, 15)
-    ; Fallback: no perfect triplet — use whichever numeric icons we have so
-    ; we can still surface partial info.
     if triple.Length < 3 && numIcons.Length > 0
         triple := numIcons.Clone()
 
     UltimatumSortByX(triple)
     UltimatumSortByX(mods)
 
-    positions := []
-    Loop 3
-        positions.Push({tier: "Not Found", mod: "Not Found"})
+    grouped := Map()
+    grouped["Left"]   := {tier: "Not Found", mod: "Not Found"}
+    grouped["Middle"] := {tier: "Not Found", mod: "Not Found"}
+    grouped["Right"]  := {tier: "Not Found", mod: "Not Found"}
+    order := ["Left", "Middle", "Right"]
 
     tLimit := triple.Length < 3 ? triple.Length : 3
     Loop tLimit
-        positions[A_Index].tier := "Tier " triple[A_Index].name
+        grouped[order[A_Index]].tier := "Tier " triple[A_Index].name
 
     mLimit := mods.Length < 3 ? mods.Length : 3
     Loop mLimit
-        positions[A_Index].mod := mods[A_Index].name
+        grouped[order[A_Index]].mod := mods[A_Index].name
 
+    return UltimatumFormatPositionAnalysis(grouped)
+}
+
+; ─────────────────────────────────────────────────────────────────────────────
+; Group `pos`-tagged matches into Left/Middle/Right buckets, taking the first
+; numerically-named Icon and the first Modifier seen per position.
+; ─────────────────────────────────────────────────────────────────────────────
+UltimatumGroupByPos(matches) {
+    grouped := Map()
+    grouped["Left"]   := {tier: "Not Found", mod: "Not Found"}
+    grouped["Middle"] := {tier: "Not Found", mod: "Not Found"}
+    grouped["Right"]  := {tier: "Not Found", mod: "Not Found"}
+    for _, m in matches {
+        if !m.HasOwnProp("pos") || !grouped.Has(m.pos)
+            continue
+        bucket := grouped[m.pos]
+        if m.source = "Icon" && m.name ~= "^\d+$" && bucket.tier = "Not Found"
+            bucket.tier := "Tier " m.name
+        else if m.source = "Modifier" && bucket.mod = "Not Found"
+            bucket.mod := m.name
+    }
+    return grouped
+}
+
+UltimatumFormatPositionAnalysis(grouped) {
     fmt := "{:-25} ---- {:-25} ---- {:-25}"
     return Format(fmt, "Left Modifier", "Middle Modifier", "Right Modifier")
-         . "`n" . Format(fmt, positions[1].tier, positions[2].tier, positions[3].tier)
-         . "`n" . Format(fmt, positions[1].mod, positions[2].mod, positions[3].mod)
+         . "`n" . Format(fmt, grouped["Left"].tier, grouped["Middle"].tier, grouped["Right"].tier)
+         . "`n" . Format(fmt, grouped["Left"].mod,  grouped["Middle"].mod,  grouped["Right"].mod)
 }
 
 ; ─────────────────────────────────────────────────────────────────────────────
@@ -580,6 +644,139 @@ UltimatumSaveErr0(ctrl, *) {
     global UltimatumErr0
     UltimatumErr0 := ctrl.Value
     IniWrite(UltimatumErr0, A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumErr0")
+}
+
+UltimatumSaveDetectBtnName(ctrl, *) {
+    global UltimatumDetectBtnName
+    UltimatumDetectBtnName := ctrl.Value
+    IniWrite(UltimatumDetectBtnName, A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumDetectBtnName")
+}
+UltimatumSaveDetectBtnYDelta(ctrl, *) {
+    global UltimatumDetectBtnYDelta
+    UltimatumDetectBtnYDelta := ctrl.Value
+    IniWrite(UltimatumDetectBtnYDelta, A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumDetectBtnYDelta")
+}
+UltimatumSaveDetectBtnLeftDX(ctrl, *) {
+    global UltimatumDetectBtnLeftDX
+    UltimatumDetectBtnLeftDX := ctrl.Value
+    IniWrite(UltimatumDetectBtnLeftDX, A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumDetectBtnLeftDX")
+}
+UltimatumSaveDetectBtnMidDX(ctrl, *) {
+    global UltimatumDetectBtnMidDX
+    UltimatumDetectBtnMidDX := ctrl.Value
+    IniWrite(UltimatumDetectBtnMidDX, A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumDetectBtnMidDX")
+}
+UltimatumSaveDetectBtnRightDX(ctrl, *) {
+    global UltimatumDetectBtnRightDX
+    UltimatumDetectBtnRightDX := ctrl.Value
+    IniWrite(UltimatumDetectBtnRightDX, A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumDetectBtnRightDX")
+}
+
+; ─────────────────────────────────────────────────────────────────────────────
+; Look up the FindText pattern for a row Named `searchName`. Checks the
+; Modifier table first (column 7) then the Icon table (column 2). Returns
+; "" if not found.
+; ─────────────────────────────────────────────────────────────────────────────
+UltimatumLookupFindText(searchName) {
+    global UltimatumLV, UltimatumIconLV
+    Loop UltimatumLV.GetCount() {
+        if UltimatumLV.GetText(A_Index, 1) = searchName
+            return UltimatumLV.GetText(A_Index, 7)
+    }
+    Loop UltimatumIconLV.GetCount() {
+        if UltimatumIconLV.GetText(A_Index, 1) = searchName
+            return UltimatumIconLV.GetText(A_Index, 2)
+    }
+    return ""
+}
+
+; ─────────────────────────────────────────────────────────────────────────────
+; Detect by Button:
+;   1. FindText the button row whose Name = UltimatumDetectBtnName.
+;   2. For each of the three icon positions (Left/Middle/Right) — computed
+;      as button.x + ΔX and button.y + YΔ — mouse over the spot, sleep so
+;      the in-game tooltip can render, take a fresh FindText screenshot, and
+;      run FindText against:
+;        - every numerically-named Icon row (tier glyphs), and
+;        - every Modifier row's FindText.
+;   3. Each hit is pushed into the matches array tagged with `pos` so the
+;      bottom-panel analyzer can group them by Left/Middle/Right directly
+;      instead of inferring position from X.
+;   4. Open the standard Ultimatum Detection Matches window.
+; ─────────────────────────────────────────────────────────────────────────────
+UltimatumDetectByButton(*) {
+    global UltimatumLV, UltimatumIconLV, UltimatumErr1, UltimatumErr0
+    global UltimatumDetectBtnName, UltimatumDetectBtnYDelta
+    global UltimatumDetectBtnLeftDX, UltimatumDetectBtnMidDX, UltimatumDetectBtnRightDX
+
+    btnFT := UltimatumLookupFindText(UltimatumDetectBtnName)
+    if btnFT = "" {
+        MsgBox("Button '" UltimatumDetectBtnName "' was not found in the Modifiers or Icons tables (matched by Name).", "Detect by Button", "IconX")
+        return
+    }
+
+    outX := "", outY := ""
+    btn := FindText(&outX, &outY, 0, 0, A_ScreenWidth, A_ScreenHeight
+        , UltimatumErr1, UltimatumErr0, btnFT)
+    if !btn {
+        MsgBox("Button '" UltimatumDetectBtnName "' not found on screen.", "Detect by Button", "IconX")
+        return
+    }
+    btnCenterX := btn[1].x
+    btnCenterY := btn[1].y
+
+    positions := [{name: "Left",   dx: UltimatumDetectBtnLeftDX + 0}
+                , {name: "Middle", dx: UltimatumDetectBtnMidDX  + 0}
+                , {name: "Right",  dx: UltimatumDetectBtnRightDX + 0}]
+    yDelta := UltimatumDetectBtnYDelta + 0
+
+    matches := []
+    for _, pos in positions {
+        iconX := btnCenterX + pos.dx
+        iconY := btnCenterY + yDelta
+
+        MouseMove(iconX, iconY, 0)
+        Sleep(300)  ; let the in-game tooltip render
+
+        ; Fresh screenshot for this hover state; subsequent FindText calls
+        ; use the cached frame (ScreenShot = 0).
+        FindText().ScreenShot(0, 0, A_ScreenWidth, A_ScreenHeight)
+
+        ; Search every numerically-named Icon row (the tier glyphs).
+        Loop UltimatumIconLV.GetCount() {
+            name := UltimatumIconLV.GetText(A_Index, 1)
+            if !(name ~= "^\d+$")
+                continue
+            ftStr := UltimatumIconLV.GetText(A_Index, 2)
+            if ftStr = ""
+                continue
+            outX := "", outY := ""
+            ok := FindText(&outX, &outY, 0, 0, A_ScreenWidth, A_ScreenHeight
+                , UltimatumErr1, UltimatumErr0, ftStr, 0, 1)
+            if ok {
+                for _, m in ok
+                    matches.Push({source: "Icon", name: name, pos: pos.name
+                        , x: m.1, y: m.2, w: m.3, h: m.4})
+            }
+        }
+
+        ; Search every Modifier row.
+        Loop UltimatumLV.GetCount() {
+            name  := UltimatumLV.GetText(A_Index, 1)
+            ftStr := UltimatumLV.GetText(A_Index, 7)
+            if ftStr = ""
+                continue
+            outX := "", outY := ""
+            ok := FindText(&outX, &outY, 0, 0, A_ScreenWidth, A_ScreenHeight
+                , UltimatumErr1, UltimatumErr0, ftStr, 0)
+            if ok {
+                matches.Push({source: "Modifier", name: name, pos: pos.name
+                    , x: ok[1].1, y: ok[1].2, w: ok[1].3, h: ok[1].4})
+            }
+        }
+    }
+
+    UltimatumShowMatches(matches)
 }
 
 ; ─────────────────────────────────────────────────────────────────────────────
