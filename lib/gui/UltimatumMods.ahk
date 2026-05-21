@@ -29,6 +29,7 @@ UltimatumModsUI(*) {
     global UltimatumUI, UltimatumLV, UltimatumIconLV, UltimatumFileLbl
     global WR, UltimatumModsJsonPath
     global YesUltimatumShowHighlight, YesUltimatumShowScreenshot
+    global UltimatumErr1, UltimatumErr0
 
     UltimatumUI := Gui()
     UltimatumUI.Opt("+AlwaysOnTop -MinimizeBox")
@@ -58,7 +59,7 @@ UltimatumModsUI(*) {
     UltimatumFileLbl := UltimatumUI.Add("Text", "x+10 yp+8 w400", shortName)
 
     ; Row 2 – Debug group
-    UltimatumUI.Add("GroupBox", "Section w700 h90 xs y+10", "Debug")
+    UltimatumUI.Add("GroupBox", "Section w700 h125 xs y+10", "Debug")
     UltimatumUI.Add("Button", "xs+5 ys+18 w115 h28", "Add Modifier").OnEvent("Click",    UltimatumAddRow)
     UltimatumUI.Add("Button", "x+5 w100 h28",         "Move Up").OnEvent("Click",        UltimatumMoveUp)
     UltimatumUI.Add("Button", "x+5 w100 h28",         "Move Down").OnEvent("Click",      UltimatumMoveDown)
@@ -70,6 +71,14 @@ UltimatumModsUI(*) {
     cbSS := UltimatumUI.Add("CheckBox", "x+8 yp", "Show Screenshot")
     cbSS.Value := YesUltimatumShowScreenshot
     cbSS.OnEvent("Click", (*) => UltimatumSaveScreenshot(cbSS))
+
+    ; FindText sensitivity inputs (err1 = foreground/text, err0 = background)
+    UltimatumUI.Add("Text", "xs+5 y+12",   "Err1 (text):")
+    eErr1 := UltimatumUI.Add("Edit", "x+3 yp-3 w55", UltimatumErr1)
+    eErr1.OnEvent("Change", (*) => UltimatumSaveErr1(eErr1))
+    UltimatumUI.Add("Text", "x+15 yp+3",   "Err0 (bg):")
+    eErr0 := UltimatumUI.Add("Edit", "x+3 yp-3 w55", UltimatumErr0)
+    eErr0.OnEvent("Change", (*) => UltimatumSaveErr0(eErr0))
 
     UltimatumUI.Show()
 }
@@ -297,6 +306,7 @@ UltimatumDuplicateRow(*) {
 ; ─────────────────────────────────────────────────────────────────────────────
 UltimatumTestDetection(*) {
     global UltimatumLV, UltimatumIconLV, YesUltimatumShowHighlight, YesUltimatumShowScreenshot
+    global UltimatumErr1, UltimatumErr0
 
     ; Optionally save a screenshot for display after detection
     tempImg := ""
@@ -339,7 +349,7 @@ UltimatumTestDetection(*) {
         if ftStr = ""
             continue
         outX := "", outY := ""
-        ok := FindText(&outX, &outY, 0, 0, A_ScreenWidth, A_ScreenHeight, 0.1, 0.1, ftStr, 0)
+        ok := FindText(&outX, &outY, 0, 0, A_ScreenWidth, A_ScreenHeight, UltimatumErr1, UltimatumErr0, ftStr, 0)
         if ok {
             found++
             if YesUltimatumShowHighlight
@@ -418,6 +428,18 @@ UltimatumSaveScreenshot(cb, *) {
     global YesUltimatumShowScreenshot
     YesUltimatumShowScreenshot := cb.Value
     IniWrite(YesUltimatumShowScreenshot, A_ScriptDir "\save\Settings.ini", "Automation", "YesUltimatumShowScreenshot")
+}
+
+UltimatumSaveErr1(ctrl, *) {
+    global UltimatumErr1
+    UltimatumErr1 := ctrl.Value
+    IniWrite(UltimatumErr1, A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumErr1")
+}
+
+UltimatumSaveErr0(ctrl, *) {
+    global UltimatumErr0
+    UltimatumErr0 := ctrl.Value
+    IniWrite(UltimatumErr0, A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumErr0")
 }
 
 ; ─────────────────────────────────────────────────────────────────────────────

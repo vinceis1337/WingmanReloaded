@@ -728,6 +728,8 @@ readFromFile(){
 	UltimatumLoadFromPath(UltimatumModsJsonPath)
 	YesUltimatumShowHighlight := IniRead(A_ScriptDir "\save\Settings.ini", "Automation", "YesUltimatumShowHighlight", 1)
 	YesUltimatumShowScreenshot := IniRead(A_ScriptDir "\save\Settings.ini", "Automation", "YesUltimatumShowScreenshot", 0)
+	UltimatumErr1 := IniRead(A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumErr1", 0.1)
+	UltimatumErr0 := IniRead(A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumErr0", 0.1)
 
 	Thread("NoTimers", false) ;End Critical
 	Return
