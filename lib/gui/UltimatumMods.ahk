@@ -975,7 +975,8 @@ UltimatumRunDetectCycle(*) {
         }
 
         ; Search every Modifier row within the same 800×800 region above
-        ; the button.
+        ; the button. Only one modifier is visible per hover, so break out
+        ; of the loop as soon as we find a match.
         Loop UltimatumLV.GetCount() {
             name  := UltimatumLV.GetText(A_Index, 1)
             ftStr := UltimatumLV.GetText(A_Index, 7)
@@ -987,6 +988,7 @@ UltimatumRunDetectCycle(*) {
             if ok {
                 matches.Push({source: "Modifier", name: name, pos: pos.name
                     , x: ok[1].1, y: ok[1].2, w: ok[1].3, h: ok[1].4})
+                break
             }
         }
     }
