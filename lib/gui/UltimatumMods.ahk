@@ -745,12 +745,13 @@ UltimatumDetectByButton(*) {
                 , {name: "Middle", x: btnCenterX + midDX}
                 , {name: "Right",  x: btnCenterX + rightDX}]
 
-    ; Icon-scan region: 800×800 square anchored to the bottom-center of the
-    ; button (400px to each side, 800px upward).
-    iconRectX1 := btnCenterX - 400
-    iconRectY1 := btnCenterY - 800
-    iconRectX2 := btnCenterX + 400
-    iconRectY2 := btnCenterY
+    ; Scan region: 800×800 square anchored to the bottom-center of the
+    ; button (400px to each side, 800px upward). Used for both the Icon
+    ; and the Modifier FindText loops.
+    scanRectX1 := btnCenterX - 400
+    scanRectY1 := btnCenterY - 800
+    scanRectX2 := btnCenterX + 400
+    scanRectY2 := btnCenterY
 
     matches := []
     for _, pos in positions {
@@ -774,7 +775,7 @@ UltimatumDetectByButton(*) {
             if ftStr = ""
                 continue
             outX := "", outY := ""
-            ok := FindText(&outX, &outY, iconRectX1, iconRectY1, iconRectX2, iconRectY2
+            ok := FindText(&outX, &outY, scanRectX1, scanRectY1, scanRectX2, scanRectY2
                 , UltimatumErr1, UltimatumErr0, ftStr, 0, 1)
             if ok {
                 for _, m in ok
@@ -783,14 +784,15 @@ UltimatumDetectByButton(*) {
             }
         }
 
-        ; Search every Modifier row.
+        ; Search every Modifier row within the same 800×800 region above
+        ; the button.
         Loop UltimatumLV.GetCount() {
             name  := UltimatumLV.GetText(A_Index, 1)
             ftStr := UltimatumLV.GetText(A_Index, 7)
             if ftStr = ""
                 continue
             outX := "", outY := ""
-            ok := FindText(&outX, &outY, 0, 0, A_ScreenWidth, A_ScreenHeight
+            ok := FindText(&outX, &outY, scanRectX1, scanRectY1, scanRectX2, scanRectY2
                 , UltimatumErr1, UltimatumErr0, ftStr, 0)
             if ok {
                 matches.Push({source: "Modifier", name: name, pos: pos.name
