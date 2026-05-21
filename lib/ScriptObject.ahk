@@ -94,17 +94,17 @@ WR.CustomMapMods.MapMods := []
 WR.CustomMapMods.HeistMods := []
 WR.UltimatumMods.Modifiers := []
 WR.UltimatumMods.Icons := []
+WR.UltimatumMods.DetectSettings := Map(
+    "ButtonYDelta",  100,
+    "ButtonLeftDX",  200,
+    "ButtonMidDX",   0,
+    "ButtonRightDX", 200)
 Global UltimatumModsJsonPath := ""
 Global YesUltimatumShowHighlight := 1
 Global YesUltimatumShowScreenshot := 0
 Global YesUltimatumShowMouseCoords := 0
 Global UltimatumErr1 := 0.1
 Global UltimatumErr0 := 0.1
-Global UltimatumDetectBtnName    := "Begin"
-Global UltimatumDetectBtnYDelta  := 100
-Global UltimatumDetectBtnLeftDX  := 200
-Global UltimatumDetectBtnMidDX   := 0
-Global UltimatumDetectBtnRightDX := 200
 
 for _k,_v in POEData
 {

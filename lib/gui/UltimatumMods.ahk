@@ -14,12 +14,30 @@ UltimatumLoadFromPath(path) {
     if obj is Array {
         WR.UltimatumMods.Modifiers := obj
         WR.UltimatumMods.Icons     := []
+        UltimatumApplyDetectSettings(Map())
     } else {
         WR.UltimatumMods.Modifiers := obj.Has("Modifiers") ? obj["Modifiers"] : []
         WR.UltimatumMods.Icons     := obj.Has("Icons")      ? obj["Icons"]
                                     : obj.Has("TierLevels") ? obj["TierLevels"]
                                     : []
+        UltimatumApplyDetectSettings(obj.Has("DetectSettings") ? obj["DetectSettings"] : Map())
     }
+}
+
+; ─────────────────────────────────────────────────────────────────────────────
+; Merge a JSON-loaded DetectSettings map into WR.UltimatumMods.DetectSettings,
+; using defaults for any missing keys. Called from UltimatumLoadFromPath.
+; ─────────────────────────────────────────────────────────────────────────────
+UltimatumApplyDetectSettings(ds) {
+    global WR
+    defaults := Map(
+        "ButtonYDelta",  100,
+        "ButtonLeftDX",  200,
+        "ButtonMidDX",   0,
+        "ButtonRightDX", 200)
+    WR.UltimatumMods.DetectSettings := Map()
+    for k, defVal in defaults
+        WR.UltimatumMods.DetectSettings[k] := ds.Has(k) ? ds[k] : defVal
 }
 
 ; ─────────────────────────────────────────────────────────────────────────────
@@ -30,8 +48,6 @@ UltimatumModsUI(*) {
     global WR, UltimatumModsJsonPath
     global YesUltimatumShowHighlight, YesUltimatumShowScreenshot, YesUltimatumShowMouseCoords
     global UltimatumErr1, UltimatumErr0
-    global UltimatumDetectBtnName, UltimatumDetectBtnYDelta
-    global UltimatumDetectBtnLeftDX, UltimatumDetectBtnMidDX, UltimatumDetectBtnRightDX
 
     UltimatumUI := Gui()
     UltimatumUI.Opt("+AlwaysOnTop -MinimizeBox")
@@ -88,24 +104,23 @@ UltimatumModsUI(*) {
     eErr0.OnEvent("Change", (*) => UltimatumSaveErr0(eErr0))
 
     ; Detect by Button – alternative detection algorithm that hovers each of
-    ; the three on-screen icons (positioned by deltas from a known button)
-    ; and re-runs FindText on a fresh screenshot per hover.
-    UltimatumUI.Add("GroupBox", "Section w700 h120 xs y+10", "Detect by Button")
-    UltimatumUI.Add("Text", "xs+5 ys+22",   "Button Name:")
-    eBN := UltimatumUI.Add("Edit", "x+5 yp-3 w140", UltimatumDetectBtnName)
-    eBN.OnEvent("Change", (*) => UltimatumSaveDetectBtnName(eBN))
-    UltimatumUI.Add("Text", "x+20 yp+3",    "Y Δ:")
-    eYD := UltimatumUI.Add("Edit", "x+5 yp-3 w55", UltimatumDetectBtnYDelta)
+    ; the three on-screen icons (positioned by deltas from one of the known
+    ; ultimatum buttons: Begin / Accept Trial / Confirm) and re-runs FindText
+    ; on a fresh screenshot per hover. Deltas live in the JSON file with the
+    ; Modifier and Icon tables.
+    ds := WR.UltimatumMods.DetectSettings
+    UltimatumUI.Add("GroupBox", "Section w700 h100 xs y+10", "Detect by Button (scans for Begin / Accept Trial / Confirm)")
+    UltimatumUI.Add("Text", "xs+5 ys+22",    "Y Δ:")
+    eYD := UltimatumUI.Add("Edit", "x+5 yp-3 w55", ds["ButtonYDelta"])
     eYD.OnEvent("Change", (*) => UltimatumSaveDetectBtnYDelta(eYD))
-
-    UltimatumUI.Add("Text", "xs+5 y+10",    "Left X Δ:")
-    eLD := UltimatumUI.Add("Edit", "x+5 yp-3 w55", UltimatumDetectBtnLeftDX)
+    UltimatumUI.Add("Text", "x+20 yp+3",     "Left X Δ:")
+    eLD := UltimatumUI.Add("Edit", "x+5 yp-3 w55", ds["ButtonLeftDX"])
     eLD.OnEvent("Change", (*) => UltimatumSaveDetectBtnLeftDX(eLD))
-    UltimatumUI.Add("Text", "x+15 yp+3",    "Middle X Δ:")
-    eMD := UltimatumUI.Add("Edit", "x+5 yp-3 w55", UltimatumDetectBtnMidDX)
+    UltimatumUI.Add("Text", "x+15 yp+3",     "Middle X Δ:")
+    eMD := UltimatumUI.Add("Edit", "x+5 yp-3 w55", ds["ButtonMidDX"])
     eMD.OnEvent("Change", (*) => UltimatumSaveDetectBtnMidDX(eMD))
-    UltimatumUI.Add("Text", "x+15 yp+3",    "Right X Δ:")
-    eRD := UltimatumUI.Add("Edit", "x+5 yp-3 w55", UltimatumDetectBtnRightDX)
+    UltimatumUI.Add("Text", "x+15 yp+3",     "Right X Δ:")
+    eRD := UltimatumUI.Add("Edit", "x+5 yp-3 w55", ds["ButtonRightDX"])
     eRD.OnEvent("Change", (*) => UltimatumSaveDetectBtnRightDX(eRD))
 
     UltimatumUI.Add("Button", "xs+5 y+10 w160 h28", "Detect by Button").OnEvent("Click", UltimatumDetectByButton)
@@ -654,30 +669,24 @@ UltimatumSaveErr0(ctrl, *) {
     IniWrite(UltimatumErr0, A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumErr0")
 }
 
-UltimatumSaveDetectBtnName(ctrl, *) {
-    global UltimatumDetectBtnName
-    UltimatumDetectBtnName := ctrl.Value
-    IniWrite(UltimatumDetectBtnName, A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumDetectBtnName")
-}
+; The four delta inputs update WR.UltimatumMods.DetectSettings in-memory.
+; Their values land in the JSON file the next time the user clicks
+; "Save Modifier Json".
 UltimatumSaveDetectBtnYDelta(ctrl, *) {
-    global UltimatumDetectBtnYDelta
-    UltimatumDetectBtnYDelta := ctrl.Value
-    IniWrite(UltimatumDetectBtnYDelta, A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumDetectBtnYDelta")
+    global WR
+    WR.UltimatumMods.DetectSettings["ButtonYDelta"] := ctrl.Value
 }
 UltimatumSaveDetectBtnLeftDX(ctrl, *) {
-    global UltimatumDetectBtnLeftDX
-    UltimatumDetectBtnLeftDX := ctrl.Value
-    IniWrite(UltimatumDetectBtnLeftDX, A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumDetectBtnLeftDX")
+    global WR
+    WR.UltimatumMods.DetectSettings["ButtonLeftDX"] := ctrl.Value
 }
 UltimatumSaveDetectBtnMidDX(ctrl, *) {
-    global UltimatumDetectBtnMidDX
-    UltimatumDetectBtnMidDX := ctrl.Value
-    IniWrite(UltimatumDetectBtnMidDX, A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumDetectBtnMidDX")
+    global WR
+    WR.UltimatumMods.DetectSettings["ButtonMidDX"] := ctrl.Value
 }
 UltimatumSaveDetectBtnRightDX(ctrl, *) {
-    global UltimatumDetectBtnRightDX
-    UltimatumDetectBtnRightDX := ctrl.Value
-    IniWrite(UltimatumDetectBtnRightDX, A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumDetectBtnRightDX")
+    global WR
+    WR.UltimatumMods.DetectSettings["ButtonRightDX"] := ctrl.Value
 }
 
 ; ─────────────────────────────────────────────────────────────────────────────
@@ -713,33 +722,43 @@ UltimatumLookupFindText(searchName) {
 ;   4. Open the standard Ultimatum Detection Matches window.
 ; ─────────────────────────────────────────────────────────────────────────────
 UltimatumDetectByButton(*) {
-    global UltimatumLV, UltimatumIconLV, UltimatumErr1, UltimatumErr0
-    global UltimatumDetectBtnName, UltimatumDetectBtnYDelta
-    global UltimatumDetectBtnLeftDX, UltimatumDetectBtnMidDX, UltimatumDetectBtnRightDX
+    global UltimatumLV, UltimatumIconLV, UltimatumErr1, UltimatumErr0, WR
 
-    btnFT := UltimatumLookupFindText(UltimatumDetectBtnName)
-    if btnFT = "" {
-        MsgBox("Button '" UltimatumDetectBtnName "' was not found in the Modifiers or Icons tables (matched by Name).", "Detect by Button", "IconX")
-        return
+    ; Try each known ultimatum button in turn; use the first one whose
+    ; FindText pattern (looked up by Name) is present on screen.
+    btnNames := ["Begin", "Accept Trial", "Confirm"]
+    foundName := "", btnCenterX := 0, btnCenterY := 0
+    for _, bn in btnNames {
+        ftStr := UltimatumLookupFindText(bn)
+        if ftStr = ""
+            continue
+        outX := "", outY := ""
+        btn := FindText(&outX, &outY, 0, 0, A_ScreenWidth, A_ScreenHeight
+            , UltimatumErr1, UltimatumErr0, ftStr)
+        if btn {
+            foundName  := bn
+            btnCenterX := btn[1].x
+            btnCenterY := btn[1].y
+            break
+        }
     }
 
-    outX := "", outY := ""
-    btn := FindText(&outX, &outY, 0, 0, A_ScreenWidth, A_ScreenHeight
-        , UltimatumErr1, UltimatumErr0, btnFT)
-    if !btn {
-        MsgBox("Button '" UltimatumDetectBtnName "' not found on screen.", "Detect by Button", "IconX")
+    if foundName = "" {
+        ; 0x40000 = MB_TOPMOST so the dialog stays above the game and other
+        ; windows that might steal focus on hover.
+        MsgBox("None of [Begin, Accept Trial, Confirm] were found on screen.`n`nMake sure each has a row in the Modifier or Icon tables with a FindText pattern."
+             , "Detect by Button", "IconX 0x40000")
         return
     }
-    btnCenterX := btn[1].x
-    btnCenterY := btn[1].y
 
     ; All four inputs are positive magnitudes. Y Δ is subtracted because the
     ; icons sit above the button, Left X Δ is subtracted because it sits to
     ; the left, Middle/Right X Δ are added.
-    leftDX  := UltimatumDetectBtnLeftDX  + 0
-    midDX   := UltimatumDetectBtnMidDX   + 0
-    rightDX := UltimatumDetectBtnRightDX + 0
-    yDelta  := UltimatumDetectBtnYDelta  + 0
+    ds := WR.UltimatumMods.DetectSettings
+    leftDX  := ds["ButtonLeftDX"]  + 0
+    midDX   := ds["ButtonMidDX"]   + 0
+    rightDX := ds["ButtonRightDX"] + 0
+    yDelta  := ds["ButtonYDelta"]  + 0
 
     positions := [{name: "Left",   x: btnCenterX - leftDX}
                 , {name: "Middle", x: btnCenterX + midDX}
@@ -831,8 +850,9 @@ UltimatumSaveJson(*) {
     UltimatumCollectRows()
     UltimatumCollectIcons()
     out := Map()
-    out["Modifiers"] := WR.UltimatumMods.Modifiers
-    out["Icons"]     := WR.UltimatumMods.Icons
+    out["Modifiers"]      := WR.UltimatumMods.Modifiers
+    out["Icons"]          := WR.UltimatumMods.Icons
+    out["DetectSettings"] := WR.UltimatumMods.DetectSettings
     saveDir := A_ScriptDir "\save\automation\ultimatum"
     DirCreate(saveDir)
     SplitPath(UltimatumModsJsonPath, &shortName)
