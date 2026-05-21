@@ -77,18 +77,18 @@
 			"FindText": "",
 			"ModifierName": "Totem of Costly Might",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "An invulnerable Totem will appear that imbues both its allies and its enemies with Speed and powerful Elemental Damage benefits, but causes enemies to take 15% of their maximum Life and Energy Shield as Fire Damage per second",
 			"FindText": "",
 			"ModifierName": "Totem of Costly Potency",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "1: A ring of Blood surrounds the Altar, dealing heavy Physical Damage over time\n2: A large ring of Blood surrounds the Altar, dealing heavy Physical Damage over time",
@@ -96,8 +96,8 @@
 			"ModifierName": "Blood Altar",
 			"Tier1": "Easy",
 			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "1: A pit of slowing Quicksand will periodically appear\n2: A large pit of slowing Quicksand will periodically appear\n3: Many large pits of slowing Quicksand will periodically appear\n4: Many large pits of slowing Quicksand that reduce Life Recovery Rate by 50% will periodically appear",
@@ -113,9 +113,9 @@
 			"FindText": "",
 			"ModifierName": "Limited Arena",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "1: A Monster type will apply Ruin with its special ability\nFail on reaching 7 Ruin\n2: A Monster type will apply double Ruin with its special ability\nFail on reaching 7 Ruin\n3: Two Monster types will apply double Ruin with their special abilities\nFail on reaching 7 Ruin\n4: Two Monster types will apply quadruple Ruin with their special abilities\nFail on reaching 7 Ruin",
@@ -132,278 +132,278 @@
 			"ModifierName": "Reduced Recovery",
 			"Tier1": "Easy",
 			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Players have 60% less Area of Effect and Projectile Speed",
 			"FindText": "",
 			"ModifierName": "Lessened Reach",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Buffs expire five times faster on Players",
 			"FindText": "",
 			"ModifierName": "Buffs Expire Faster",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Cooldowns take five times longer to recharge",
 			"FindText": "",
 			"ModifierName": "Less Cooldown Recovery",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "For the remainder of the encounter, damage taken will slowly increase by 2% per second, up to 50%",
 			"FindText": "",
 			"ModifierName": "Escalating Damage Taken",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Monsters gain 5% increased attack, cast, and movement speed per second they are alive, up to 50%",
 			"FindText": "",
 			"ModifierName": "Escalating Monster Speed",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Monsters deal 80% of Physical Damage Added as Chaos Damage",
 			"FindText": "",
 			"ModifierName": "Profane Monsters",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Your Critical Strike Chance is Unlucky\nMonsters take 50% reduced Extra Damage from Critical Strikes",
 			"FindText": "",
 			"ModifierName": "Unlucky Criticals",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Using a Flask Hinders you by 50% for 4 seconds",
 			"FindText": "",
 			"ModifierName": "Hindering Flasks",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Cannot gain Flask Charges",
 			"FindText": "",
 			"ModifierName": "Drought",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Curses and Non-damaging Ailments you apply are Reflected\nMonsters are unaffected by Curses",
 			"FindText": "",
 			"ModifierName": "Ailment and Curse Reflection",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Take 1000% of Mana costs as Lightning Damage",
 			"FindText": "",
 			"ModifierName": "Lightning Damage from Mana Costs",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Your Projectiles fly in random directions\nMonsters fire additional Projectiles",
 			"FindText": "",
 			"ModifierName": "Random Projectiles",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Your Auras that affect Allies also affect Enemies",
 			"FindText": "",
 			"ModifierName": "Treacherous Auras",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "You and your Minions deal no damage for 2 seconds every 8 seconds",
 			"FindText": "",
 			"ModifierName": "Occasional Impotence",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Lose a Power, Frenzy, and Endurance Charge every second\nMonsters gain Power, Frenzy, and Endurance Charges on hit",
 			"FindText": "",
 			"ModifierName": "Siphoned Charges",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Players have -9% to all maximum Resistances",
 			"FindText": "",
 			"ModifierName": "Impurity",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Players have 50% reduced effect of Non-Curse Auras from Skills",
 			"FindText": "",
 			"ModifierName": "Waning Spirit",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "You cannot Block",
 			"FindText": "",
 			"ModifierName": "Shattered Shield",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Monsters cannot be Slowed or Stunned",
 			"FindText": "",
 			"ModifierName": "Unstoppable Monsters",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Rare Monsters have 2 additional Modifiers",
 			"FindText": "",
 			"ModifierName": "Lethal Rare Monsters",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Monsters have 50% chance to Block Attack and Spell Damage",
 			"FindText": "",
 			"ModifierName": "Shielding Monsters",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Monster Hits cannot be Evaded",
 			"FindText": "",
 			"ModifierName": "Precise Monsters",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Monster Hits Overwhelm all Physical Damage Reduction",
 			"FindText": "",
 			"ModifierName": "Overwhelming Monsters",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Monster Hits are always Critical Strikes",
 			"FindText": "",
 			"ModifierName": "Deadly Monsters",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Monsters gain 50% of Physical Damage as Extra Damage of each Element",
 			"FindText": "",
 			"ModifierName": "Prismatic Monsters",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Monsters have +50% to all Resistances",
 			"FindText": "",
 			"ModifierName": "Resistant Monsters",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Monsters Suppress Spell Damage and gain 500% increased Evasion Rating",
 			"FindText": "",
 			"ModifierName": "Dexterous Monsters",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Monster Hits remove 10% of current Energy Shield and Mana",
 			"FindText": "",
 			"ModifierName": "Siphoning Monsters",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Monsters Poison and Bleed on Hit",
 			"FindText": "",
 			"ModifierName": "Putrid Monsters",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		},
 		{
 			"Detail": "Monster Elemental Resistances cannot be Penetrated",
 			"FindText": "",
 			"ModifierName": "Impenetrable Monsters",
 			"Tier1": "Easy",
-			"Tier2": "Easy",
-			"Tier3": "Easy",
-			"Tier4": "Easy"
+			"Tier2": "N/A",
+			"Tier3": "N/A",
+			"Tier4": "N/A"
 		}
 	],
 	"TierLevels": [
