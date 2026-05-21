@@ -188,7 +188,7 @@ UltimatumLVEdit(ctrl, rowNum, *) {
     e.Opt("+AlwaysOnTop -MinimizeBox")
     e.Title := "Edit Ultimatum Modifier"
 
-    ratings := ["Easy", "Manageable", "Hard", "Deadly"]
+    ratings := ["Easy", "Manageable", "Hard", "Deadly", "N/A"]
 
     e.Add("Text",  "Section",          "Modifier Name:")
     eName   := e.Add("Edit",  "xs y+3 w380",  d.name)
