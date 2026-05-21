@@ -458,7 +458,7 @@ UltimatumAnalyzeSelectable(matches) {
     Loop mLimit
         positions[A_Index].mod := mods[A_Index].name
 
-    fmt := "%-25s ---- %-25s ---- %-25s"
+    fmt := "{:-25} ---- {:-25} ---- {:-25}"
     return Format(fmt, "Left Modifier", "Middle Modifier", "Right Modifier")
          . "`n" . Format(fmt, positions[1].tier, positions[2].tier, positions[3].tier)
          . "`n" . Format(fmt, positions[1].mod, positions[2].mod, positions[3].mod)
