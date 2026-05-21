@@ -244,13 +244,13 @@ UltimatumCollectRows() {
     global UltimatumLV, WR
     WR.UltimatumMods.Modifiers := []
     Loop UltimatumLV.GetCount() {
-        WR.UltimatumMods.Modifiers.Push({
-            ModifierName: UltimatumLV.GetText(A_Index, 1),
-            Tier:         UltimatumLV.GetText(A_Index, 2),
-            Detail:       UltimatumLV.GetText(A_Index, 3),
-            Rating:       UltimatumLV.GetText(A_Index, 4),
-            FindText:     UltimatumLV.GetText(A_Index, 5)
-        })
+        m := Map()
+        m["ModifierName"] := UltimatumLV.GetText(A_Index, 1)
+        m["Tier"]         := UltimatumLV.GetText(A_Index, 2)
+        m["Detail"]       := UltimatumLV.GetText(A_Index, 3)
+        m["Rating"]       := UltimatumLV.GetText(A_Index, 4)
+        m["FindText"]     := UltimatumLV.GetText(A_Index, 5)
+        WR.UltimatumMods.Modifiers.Push(m)
     }
 }
 
