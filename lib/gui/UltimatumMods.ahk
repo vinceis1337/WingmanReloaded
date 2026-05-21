@@ -8,14 +8,22 @@ UltimatumLoadFromPath(path) {
         obj := JSON.Load(FileOpen(path, "r").Read())
     catch
         return
-    WR.UltimatumMods.Modifiers := obj
+    ; Legacy format: bare array of modifiers
+    ; Current format: { "Modifiers": [...], "TierLevels": [...] }
+    if obj is Array {
+        WR.UltimatumMods.Modifiers  := obj
+        WR.UltimatumMods.TierLevels := []
+    } else {
+        WR.UltimatumMods.Modifiers  := obj.Has("Modifiers")  ? obj["Modifiers"]  : []
+        WR.UltimatumMods.TierLevels := obj.Has("TierLevels") ? obj["TierLevels"] : []
+    }
 }
 
 ; ─────────────────────────────────────────────────────────────────────────────
 ; Open / Rebuild the Ultimatum Modifier Manager window
 ; ─────────────────────────────────────────────────────────────────────────────
 UltimatumModsUI(*) {
-    global UltimatumUI, UltimatumLV, UltimatumFileLbl
+    global UltimatumUI, UltimatumLV, UltimatumTierLV, UltimatumFileLbl
     global WR, UltimatumModsJsonPath
     global YesUltimatumShowHighlight, YesUltimatumShowScreenshot
 
@@ -30,9 +38,18 @@ UltimatumModsUI(*) {
     Loop UltimatumLV.GetCount("Column")
         UltimatumLV.ModifyCol(A_Index, "AutoHdr")
 
+    ; Second table – Tier Levels
+    UltimatumTierLV := UltimatumUI.Add("ListView", "xs y+10 w400 h150 -wrap -Multi Grid",
+        ["Tier Level", "FindText"])
+    UltimatumTierLV.OnEvent("DoubleClick", UltimatumTierLVEdit)
+    UltimatumRefreshTierList()
+    Loop UltimatumTierLV.GetCount("Column")
+        UltimatumTierLV.ModifyCol(A_Index, "AutoHdr")
+    UltimatumUI.Add("Button", "x+10 yp w130 h28", "Add Tier Level").OnEvent("Click", UltimatumAddTierLevel)
+
     ; Row 1 – persistence buttons + loaded-file label
     SplitPath(UltimatumModsJsonPath, &shortName)
-    UltimatumUI.Add("Button", "w160 h30",     "Save Modifier Json").OnEvent("Click", UltimatumSaveJson)
+    UltimatumUI.Add("Button", "xs y+10 w160 h30", "Save Modifier Json").OnEvent("Click", UltimatumSaveJson)
     UltimatumUI.Add("Button", "w160 h30 x+5", "Load Modifier Json").OnEvent("Click", UltimatumLoadJson)
     UltimatumUI.Add("Button", "w120 h30 x+5", "Load Defaults").OnEvent("Click",      UltimatumLoadDefaults)
     UltimatumFileLbl := UltimatumUI.Add("Text", "x+10 yp+8", shortName)
@@ -69,6 +86,77 @@ UltimatumRefreshList() {
             get(v, "Tier4"),
             get(v, "Detail"),
             get(v, "FindText"))
+}
+
+; ─────────────────────────────────────────────────────────────────────────────
+; Populate the Tier-Levels ListView from WR.UltimatumMods.TierLevels
+; ─────────────────────────────────────────────────────────────────────────────
+UltimatumRefreshTierList() {
+    global UltimatumTierLV, WR
+    get(m, k) => (m.Has(k) ? m[k] : "")
+    for k, v in WR.UltimatumMods.TierLevels
+        UltimatumTierLV.Add("", get(v, "TierLevel"), get(v, "FindText"))
+}
+
+; ─────────────────────────────────────────────────────────────────────────────
+; Double-click a Tier-Levels row → open the row editor dialog
+; ─────────────────────────────────────────────────────────────────────────────
+UltimatumTierLVEdit(ctrl, rowNum, *) {
+    global UltimatumTierLV
+    if !rowNum
+        return
+
+    tierLevel := UltimatumTierLV.GetText(rowNum, 1)
+    ftStr     := UltimatumTierLV.GetText(rowNum, 2)
+
+    e := Gui()
+    e.Opt("+AlwaysOnTop -MinimizeBox")
+    e.Title := "Edit Tier Level"
+
+    e.Add("Text",  "Section",          "Tier Level:")
+    eTL := e.Add("Edit",  "xs y+3 w240",  tierLevel)
+
+    e.Add("Text",  "xs y+8",           "FindText:")
+    eFT := e.Add("Edit",  "xs y+3 w310 r1", ftStr)
+    e.Add("Button", "x+3 yp w65 h20", "Capture").OnEvent("Click", (*) => ft_Start())
+    e.Add("Button", "xs y+10 w120 h28", "Save").OnEvent("Click",
+        (*) => UltimatumCommitTier(e, rowNum, eTL, eFT))
+    e.Add("Button", "x+5 w120 h28", "Delete Row").OnEvent("Click",
+        (*) => UltimatumDeleteTier(e, rowNum))
+    e.Show()
+}
+
+UltimatumCommitTier(editGui, rowNum, eTL, eFT, *) {
+    global UltimatumTierLV
+    UltimatumTierLV.Modify(rowNum,, eTL.Value, eFT.Value)
+    editGui.Hide()
+}
+
+UltimatumDeleteTier(editGui, rowNum, *) {
+    global UltimatumTierLV
+    editGui.Hide()
+    UltimatumTierLV.Delete(rowNum)
+}
+
+UltimatumAddTierLevel(*) {
+    global UltimatumTierLV
+    UltimatumTierLV.Add("", "New Tier", "")
+    Loop UltimatumTierLV.GetCount("Column")
+        UltimatumTierLV.ModifyCol(A_Index, "AutoHdr")
+}
+
+; ─────────────────────────────────────────────────────────────────────────────
+; Collect Tier-Levels ListView rows into WR.UltimatumMods.TierLevels
+; ─────────────────────────────────────────────────────────────────────────────
+UltimatumCollectTierLevels() {
+    global UltimatumTierLV, WR
+    WR.UltimatumMods.TierLevels := []
+    Loop UltimatumTierLV.GetCount() {
+        m := Map()
+        m["TierLevel"] := UltimatumTierLV.GetText(A_Index, 1)
+        m["FindText"]  := UltimatumTierLV.GetText(A_Index, 2)
+        WR.UltimatumMods.TierLevels.Push(m)
+    }
 }
 
 ; ─────────────────────────────────────────────────────────────────────────────
@@ -284,6 +372,10 @@ UltimatumCollectRows() {
 UltimatumSaveJson(*) {
     global UltimatumLV, UltimatumFileLbl, WR, UltimatumModsJsonPath
     UltimatumCollectRows()
+    UltimatumCollectTierLevels()
+    out := Map()
+    out["Modifiers"]  := WR.UltimatumMods.Modifiers
+    out["TierLevels"] := WR.UltimatumMods.TierLevels
     saveDir := A_ScriptDir "\save\automation\ultimatum"
     DirCreate(saveDir)
     SplitPath(UltimatumModsJsonPath, &shortName)
@@ -293,7 +385,7 @@ UltimatumSaveJson(*) {
     if (FileExist(savepath)) {
         FileDelete(savePath)
     }
-    FileAppend(JSON.Dump(WR.UltimatumMods.Modifiers, 2), savePath)
+    FileAppend(JSON.Dump(out, 2), savePath)
     UltimatumModsJsonPath := savePath
     IniWrite(UltimatumModsJsonPath, A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumModsJsonPath")
     SplitPath(UltimatumModsJsonPath, &shortName)
@@ -304,7 +396,7 @@ UltimatumSaveJson(*) {
 ; Load the bundled default JSON without a file-selection dialog
 ; ─────────────────────────────────────────────────────────────────────────────
 UltimatumLoadDefaults(*) {
-    global UltimatumLV, UltimatumFileLbl, WR, UltimatumModsJsonPath
+    global UltimatumLV, UltimatumTierLV, UltimatumFileLbl, WR, UltimatumModsJsonPath
     defaultPath := A_ScriptDir "\data\default save data\automation\ultimatum\default_UltimatumMods.json"
     UltimatumLoadFromPath(defaultPath)
     UltimatumModsJsonPath := defaultPath
@@ -313,6 +405,10 @@ UltimatumLoadDefaults(*) {
     UltimatumRefreshList()
     Loop UltimatumLV.GetCount("Column")
         UltimatumLV.ModifyCol(A_Index, "AutoHdr")
+    UltimatumTierLV.Delete()
+    UltimatumRefreshTierList()
+    Loop UltimatumTierLV.GetCount("Column")
+        UltimatumTierLV.ModifyCol(A_Index, "AutoHdr")
     SplitPath(UltimatumModsJsonPath, &shortName)
     UltimatumFileLbl.Text := shortName
 }
@@ -321,25 +417,28 @@ UltimatumLoadDefaults(*) {
 ; Load modifier rows from a user-selected JSON file
 ; ─────────────────────────────────────────────────────────────────────────────
 UltimatumLoadJson(*) {
-    global UltimatumLV, UltimatumFileLbl, WR, UltimatumModsJsonPath
+    global UltimatumLV, UltimatumTierLV, UltimatumFileLbl, WR, UltimatumModsJsonPath
     saveDir := A_ScriptDir "\save\automation\ultimatum"
     DirCreate(saveDir)
     loadPath := FileSelect(1, saveDir "\", "Load Modifier Json", "JSON Files (*.json)")
     if loadPath = ""
         return
     try
-        obj := JSON.Load(FileOpen(loadPath, "r").Read())
+        UltimatumLoadFromPath(loadPath)
     catch as e {
         MsgBox("Error loading Ultimatum mods: " e.Message, "Error", "IconX")
         return
     }
-    WR.UltimatumMods.Modifiers := obj
     UltimatumModsJsonPath := loadPath
     IniWrite(UltimatumModsJsonPath, A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumModsJsonPath")
     UltimatumLV.Delete()
     UltimatumRefreshList()
     Loop UltimatumLV.GetCount("Column")
         UltimatumLV.ModifyCol(A_Index, "AutoHdr")
+    UltimatumTierLV.Delete()
+    UltimatumRefreshTierList()
+    Loop UltimatumTierLV.GetCount("Column")
+        UltimatumTierLV.ModifyCol(A_Index, "AutoHdr")
     SplitPath(UltimatumModsJsonPath, &shortName)
     UltimatumFileLbl.Text := shortName
 }
