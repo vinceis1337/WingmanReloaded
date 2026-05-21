@@ -489,9 +489,11 @@ UltimatumAnalyzeSelectable(matches) {
     UltimatumSortByX(mods)
 
     grouped := Map()
-    grouped["Left"]   := {tier: "Not Found", mod: "Not Found"}
-    grouped["Middle"] := {tier: "Not Found", mod: "Not Found"}
-    grouped["Right"]  := {tier: "Not Found", mod: "Not Found"}
+    ; Default Tier is 1 — if the tier glyph wasn't matched on an icon, assume
+    ; it's a Tier 1 modifier rather than reporting "Not Found".
+    grouped["Left"]   := {tier: "Tier 1", mod: "Not Found"}
+    grouped["Middle"] := {tier: "Tier 1", mod: "Not Found"}
+    grouped["Right"]  := {tier: "Tier 1", mod: "Not Found"}
     order := ["Left", "Middle", "Right"]
 
     tLimit := triple.Length < 3 ? triple.Length : 3
@@ -511,17 +513,23 @@ UltimatumAnalyzeSelectable(matches) {
 ; ─────────────────────────────────────────────────────────────────────────────
 UltimatumGroupByPos(matches) {
     grouped := Map()
-    grouped["Left"]   := {tier: "Not Found", mod: "Not Found"}
-    grouped["Middle"] := {tier: "Not Found", mod: "Not Found"}
-    grouped["Right"]  := {tier: "Not Found", mod: "Not Found"}
+    ; Default Tier is 1 — if the tier glyph wasn't matched on an icon, assume
+    ; it's a Tier 1 modifier rather than reporting "Not Found".
+    ; `tierFound` tracks whether a real numeric-Icon detection has overridden
+    ; the Tier-1 default, so the first real hit wins (not the default).
+    grouped["Left"]   := {tier: "Tier 1", mod: "Not Found", tierFound: false}
+    grouped["Middle"] := {tier: "Tier 1", mod: "Not Found", tierFound: false}
+    grouped["Right"]  := {tier: "Tier 1", mod: "Not Found", tierFound: false}
     for _, m in matches {
         if !m.HasOwnProp("pos") || !grouped.Has(m.pos)
             continue
         bucket := grouped[m.pos]
-        if m.source = "Icon" && m.name ~= "^\d+$" && bucket.tier = "Not Found"
+        if m.source = "Icon" && m.name ~= "^\d+$" && !bucket.tierFound {
             bucket.tier := "Tier " m.name
-        else if m.source = "Modifier" && bucket.mod = "Not Found"
+            bucket.tierFound := true
+        } else if m.source = "Modifier" && bucket.mod = "Not Found" {
             bucket.mod := m.name
+        }
     }
     return grouped
 }
