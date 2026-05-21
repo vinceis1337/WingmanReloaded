@@ -611,6 +611,11 @@ UltimatumLookupTierDifficulty(modName, tierStr) {
 ; ─────────────────────────────────────────────────────────────────────────────
 UltimatumChooseModifier(grouped) {
     order := ["Left", "Middle", "Right"]
+    parseTier(s) {
+        if RegExMatch(s, "(\d+)", &m)
+            return m[1] + 0
+        return 99
+    }
     candidates := []
     for _, posName in order {
         if !grouped.Has(posName)
@@ -618,7 +623,7 @@ UltimatumChooseModifier(grouped) {
         info := grouped[posName]
         diff := UltimatumLookupTierDifficulty(info.mod, info.tier)
         candidates.Push({pos: posName, mod: info.mod, tier: info.tier
-            , diff: diff, rank: UltimatumDifficultyRank(diff)})
+            , diff: diff, rank: UltimatumDifficultyRank(diff), tierNum: parseTier(info.tier)})
     }
 
     ; If no viable candidate exists (every rank ≥ 99) suggest Take Reward.
@@ -630,9 +635,23 @@ UltimatumChooseModifier(grouped) {
     if minRank >= 99
         return {takeReward: true, winners: [], candidates: candidates}
 
-    winners := []
+    ; First pass: filter to candidates at the lowest difficulty rank.
+    rankWinners := []
     for _, c in candidates {
         if c.rank = minRank
+            rankWinners.Push(c)
+    }
+
+    ; Tie-break: among those, prefer the lowest tier number. Any remaining
+    ; ties (same difficulty AND same tier) stay tied.
+    minTier := 99
+    for _, c in rankWinners {
+        if c.tierNum < minTier
+            minTier := c.tierNum
+    }
+    winners := []
+    for _, c in rankWinners {
+        if c.tierNum = minTier
             winners.Push(c)
     }
     return {takeReward: false, winners: winners, candidates: candidates}
