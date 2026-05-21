@@ -1,4 +1,34 @@
 ﻿{
+	"Icons": [
+		{
+			"FindText": "",
+			"Icon": "1"
+		},
+		{
+			"FindText": "",
+			"Icon": "2"
+		},
+		{
+			"FindText": "",
+			"Icon": "3"
+		},
+		{
+			"FindText": "",
+			"Icon": "4"
+		},
+		{
+			"FindText": "",
+			"Icon": "Begin"
+		},
+		{
+			"FindText": "",
+			"Icon": "Accept Trial"
+		},
+		{
+			"FindText": "",
+			"Icon": "Take Rewards"
+		}
+	],
 	"Modifiers": [
 		{
 			"Detail": "1: A cloud that deals Chaos Damage over Time will follow you\n2: A large cloud that deals Chaos Damage over Time will follow you\n3: A large and fast cloud that deals Chaos Damage over Time will follow you\n4: A large and very fast cloud that slows you and deals Chaos Damage over Time will follow you",
@@ -404,24 +434,6 @@
 			"Tier2": "N/A",
 			"Tier3": "N/A",
 			"Tier4": "N/A"
-		}
-	],
-	"TierLevels": [
-		{
-			"FindText": "",
-			"TierLevel": "1"
-		},
-		{
-			"FindText": "",
-			"TierLevel": "2"
-		},
-		{
-			"FindText": "",
-			"TierLevel": "3"
-		},
-		{
-			"FindText": "",
-			"TierLevel": "4"
 		}
 	]
 }
