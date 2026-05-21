@@ -725,15 +725,22 @@ UltimatumDetectByButton(*) {
     btnCenterX := btn[1].x
     btnCenterY := btn[1].y
 
-    positions := [{name: "Left",   dx: UltimatumDetectBtnLeftDX + 0}
-                , {name: "Middle", dx: UltimatumDetectBtnMidDX  + 0}
-                , {name: "Right",  dx: UltimatumDetectBtnRightDX + 0}]
-    yDelta := UltimatumDetectBtnYDelta + 0
+    ; All four inputs are positive magnitudes. Y Δ is subtracted because the
+    ; icons sit above the button, Left X Δ is subtracted because it sits to
+    ; the left, Middle/Right X Δ are added.
+    leftDX  := UltimatumDetectBtnLeftDX  + 0
+    midDX   := UltimatumDetectBtnMidDX   + 0
+    rightDX := UltimatumDetectBtnRightDX + 0
+    yDelta  := UltimatumDetectBtnYDelta  + 0
+
+    positions := [{name: "Left",   x: btnCenterX - leftDX}
+                , {name: "Middle", x: btnCenterX + midDX}
+                , {name: "Right",  x: btnCenterX + rightDX}]
 
     matches := []
     for _, pos in positions {
-        iconX := btnCenterX + pos.dx
-        iconY := btnCenterY + yDelta
+        iconX := pos.x
+        iconY := btnCenterY - yDelta
 
         MouseMove(iconX, iconY, 0)
         Sleep(300)  ; let the in-game tooltip render

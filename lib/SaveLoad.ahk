@@ -732,8 +732,8 @@ readFromFile(){
 	UltimatumErr1 := IniRead(A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumErr1", 0.1)
 	UltimatumErr0 := IniRead(A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumErr0", 0.1)
 	UltimatumDetectBtnName    := IniRead(A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumDetectBtnName", "Begin")
-	UltimatumDetectBtnYDelta  := IniRead(A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumDetectBtnYDelta", -100)
-	UltimatumDetectBtnLeftDX  := IniRead(A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumDetectBtnLeftDX", -200)
+	UltimatumDetectBtnYDelta  := IniRead(A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumDetectBtnYDelta", 100)
+	UltimatumDetectBtnLeftDX  := IniRead(A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumDetectBtnLeftDX", 200)
 	UltimatumDetectBtnMidDX   := IniRead(A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumDetectBtnMidDX", 0)
 	UltimatumDetectBtnRightDX := IniRead(A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumDetectBtnRightDX", 200)
 
