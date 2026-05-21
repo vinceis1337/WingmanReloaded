@@ -350,7 +350,7 @@ UltimatumTestDetection(*) {
         if ftStr = ""
             continue
         outX := "", outY := ""
-        ok := FindText(&outX, &outY, 0, 0, A_ScreenWidth, A_ScreenHeight, UltimatumErr1, UltimatumErr0, ftStr, 0)
+        ok := FindText(&outX, &outY, 0, 0, A_ScreenWidth, A_ScreenHeight, UltimatumErr1, UltimatumErr0, ftStr, 0, 1)
         if ok {
             found++
             ; Flash MouseTip on only the first match to avoid a long sequential
