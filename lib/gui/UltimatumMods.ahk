@@ -45,14 +45,14 @@ UltimatumModsUI(*) {
     UltimatumRefreshTierList()
     Loop UltimatumTierLV.GetCount("Column")
         UltimatumTierLV.ModifyCol(A_Index, "AutoHdr")
-    UltimatumUI.Add("Button", "x+10 yp w130 h28", "Add Tier Level").OnEvent("Click", UltimatumAddTierLevel)
+    UltimatumUI.Add("Button", "xs y+5 w130 h28", "Add Tier Level").OnEvent("Click", UltimatumAddTierLevel)
 
     ; Row 1 – persistence buttons + loaded-file label
     SplitPath(UltimatumModsJsonPath, &shortName)
     UltimatumUI.Add("Button", "xs y+10 w160 h30", "Save Modifier Json").OnEvent("Click", UltimatumSaveJson)
     UltimatumUI.Add("Button", "w160 h30 x+5", "Load Modifier Json").OnEvent("Click", UltimatumLoadJson)
     UltimatumUI.Add("Button", "w120 h30 x+5", "Load Defaults").OnEvent("Click",      UltimatumLoadDefaults)
-    UltimatumFileLbl := UltimatumUI.Add("Text", "x+10 yp+8", shortName)
+    UltimatumFileLbl := UltimatumUI.Add("Text", "x+10 yp+8 w400", shortName)
 
     ; Row 2 – Debug group
     UltimatumUI.Add("GroupBox", "Section w700 h90 xs y+10", "Debug")
@@ -293,7 +293,7 @@ UltimatumDuplicateRow(*) {
 ; optionally flash highlights and display the captured screenshot.
 ; ─────────────────────────────────────────────────────────────────────────────
 UltimatumTestDetection(*) {
-    global UltimatumLV, YesUltimatumShowHighlight, YesUltimatumShowScreenshot
+    global UltimatumLV, UltimatumTierLV, YesUltimatumShowHighlight, YesUltimatumShowScreenshot
 
     ; Optionally save a screenshot for display after detection
     tempImg := ""
@@ -308,9 +308,13 @@ UltimatumTestDetection(*) {
     ; Capture full screen once; reuse cached frame for all FindText calls
     FindText().ScreenShot(0, 0, A_ScreenWidth, A_ScreenHeight)
 
-    total := UltimatumLV.GetCount()
-    found := 0
-    Loop total {
+    matches := []   ; in-memory only – never persisted
+    total   := UltimatumLV.GetCount() + UltimatumTierLV.GetCount()
+    found   := 0
+
+    ; Scan Modifier table (FindText is column 7)
+    Loop UltimatumLV.GetCount() {
+        name  := UltimatumLV.GetText(A_Index, 1)
         ftStr := UltimatumLV.GetText(A_Index, 7)
         if ftStr = ""
             continue
@@ -320,11 +324,32 @@ UltimatumTestDetection(*) {
             found++
             if YesUltimatumShowHighlight
                 MouseTip(ok[1].1, ok[1].2, ok[1].3, ok[1].4)
+            matches.Push({source: "Modifier", name: name
+                , x: ok[1].1, y: ok[1].2, w: ok[1].3, h: ok[1].4})
+        }
+    }
+
+    ; Scan Tier-Levels table (FindText is column 2)
+    Loop UltimatumTierLV.GetCount() {
+        name  := UltimatumTierLV.GetText(A_Index, 1)
+        ftStr := UltimatumTierLV.GetText(A_Index, 2)
+        if ftStr = ""
+            continue
+        outX := "", outY := ""
+        ok := FindText(&outX, &outY, 0, 0, A_ScreenWidth, A_ScreenHeight, 0.1, 0.1, ftStr, 0)
+        if ok {
+            found++
+            if YesUltimatumShowHighlight
+                MouseTip(ok[1].1, ok[1].2, ok[1].3, ok[1].4)
+            matches.Push({source: "TierLevel", name: name
+                , x: ok[1].1, y: ok[1].2, w: ok[1].3, h: ok[1].4})
         }
     }
 
     ToolTip("Ultimatum Detection: " found "/" total " icons found")
     SetTimer(() => ToolTip(), -2000)
+
+    UltimatumShowMatches(matches)
 
     if tempImg != "" {
         sGui := Gui()
@@ -333,6 +358,44 @@ UltimatumTestDetection(*) {
         sGui.Add("Picture", "w1280 h720", tempImg)
         sGui.Show()
     }
+}
+
+; ─────────────────────────────────────────────────────────────────────────────
+; Show the in-memory list of FindText matches from the last Test Detection.
+; Double-click any row to re-flash MouseTip on the stored coordinates.
+; ─────────────────────────────────────────────────────────────────────────────
+UltimatumShowMatches(matches) {
+    global UltimatumMatchesUI, UltimatumMatchesLV
+
+    try UltimatumMatchesUI.Destroy()
+
+    UltimatumMatchesUI := Gui()
+    UltimatumMatchesUI.Opt("+AlwaysOnTop")
+    UltimatumMatchesUI.Title := "Ultimatum Detection Matches (debug, in-memory only)"
+
+    UltimatumMatchesLV := UltimatumMatchesUI.Add("ListView",
+        "w560 h300 -wrap -Multi Grid", ["Source", "Name", "X", "Y", "W", "H"])
+    UltimatumMatchesLV.OnEvent("DoubleClick", UltimatumMatchClick)
+
+    for k, m in matches
+        UltimatumMatchesLV.Add("", m.source, m.name, m.x, m.y, m.w, m.h)
+
+    Loop UltimatumMatchesLV.GetCount("Column")
+        UltimatumMatchesLV.ModifyCol(A_Index, "AutoHdr")
+
+    UltimatumMatchesUI.Add("Text", "y+5", "Double-click a row to flash its highlight box.")
+    UltimatumMatchesUI.Show()
+}
+
+UltimatumMatchClick(ctrl, rowNum, *) {
+    global UltimatumMatchesLV
+    if !rowNum
+        return
+    x := UltimatumMatchesLV.GetText(rowNum, 3) + 0
+    y := UltimatumMatchesLV.GetText(rowNum, 4) + 0
+    w := UltimatumMatchesLV.GetText(rowNum, 5) + 0
+    h := UltimatumMatchesLV.GetText(rowNum, 6) + 0
+    MouseTip(x, y, w, h)
 }
 
 UltimatumSaveHighlight(cb, *) {
