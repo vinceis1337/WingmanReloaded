@@ -780,9 +780,12 @@ UltimatumMouseCoordsTick() {
 }
 
 UltimatumSaveEmulate(cb, *) {
-    global YesUltimatumEmulateAutomation
+    global YesUltimatumEmulateAutomation, UltimatumEmulateLoopActive
     YesUltimatumEmulateAutomation := cb.Value
     IniWrite(YesUltimatumEmulateAutomation, A_ScriptDir "\save\Settings.ini", "Automation", "YesUltimatumEmulateAutomation")
+    ; Unchecking while a loop is in flight stops it.
+    if !cb.Value && UltimatumEmulateLoopActive
+        UltimatumStopEmulateLoop()
 }
 
 UltimatumSaveErr1(ctrl, *) {
@@ -849,17 +852,42 @@ UltimatumLookupFindText(searchName) {
 ;      instead of inferring position from X.
 ;   4. Open the standard Ultimatum Detection Matches window.
 ; ─────────────────────────────────────────────────────────────────────────────
+; Entry point bound to the "Detect by Button" button. Acts as:
+;   - "run once" when Emulate Automation is off (no loop, matches GUI shown).
+;   - "start loop" on the first click when Emulate Automation is on.
+;   - "stop loop" on a subsequent click while a loop is running.
+; The loop is driven by SetTimer(UltimatumRunDetectCycle, -3000) so each
+; cycle is separated by at least 3 seconds, no matter how long the previous
+; cycle's screenshots/clicks took.
 UltimatumDetectByButton(*) {
-    global UltimatumLV, UltimatumIconLV, UltimatumErr1, UltimatumErr0, WR
-    global YesUltimatumEmulateAutomation, UltimatumLastEmulateTick
+    global YesUltimatumEmulateAutomation, UltimatumEmulateLoopActive
 
-    ; While emulating, throttle re-entry to once every 3 seconds so a held
-    ; / spammed trigger can't run multiple cycles back-to-back.
-    if YesUltimatumEmulateAutomation {
-        if (A_TickCount - UltimatumLastEmulateTick) < 3000
-            return
-        UltimatumLastEmulateTick := A_TickCount
+    if UltimatumEmulateLoopActive {
+        UltimatumStopEmulateLoop()
+        return
     }
+    if YesUltimatumEmulateAutomation {
+        UltimatumEmulateLoopActive := true
+        ToolTip("Ultimatum emulation: ON — click Detect by Button to stop.", , , 4)
+        SetTimer(() => ToolTip(, , , 4), -2500)
+    }
+    UltimatumRunDetectCycle()
+}
+
+UltimatumStopEmulateLoop() {
+    global UltimatumEmulateLoopActive
+    UltimatumEmulateLoopActive := false
+    SetTimer(UltimatumRunDetectCycle, 0)
+    ToolTip("Ultimatum emulation: OFF", , , 4)
+    SetTimer(() => ToolTip(, , , 4), -2500)
+}
+
+; Body of one detection cycle. Called directly by the button click and
+; re-scheduled by itself via SetTimer when looping.
+UltimatumRunDetectCycle(*) {
+    global UltimatumLV, UltimatumIconLV, UltimatumErr1, UltimatumErr0, WR
+    global UltimatumEmulateLoopActive
+    looping := UltimatumEmulateLoopActive
 
     ; Try each known ultimatum button in turn; use the first one whose
     ; FindText pattern (looked up by Name) is present on screen.
@@ -881,6 +909,12 @@ UltimatumDetectByButton(*) {
     }
 
     if foundName = "" {
+        if looping {
+            ; The choice screen isn't up yet — silently retry in 3s.
+            if UltimatumEmulateLoopActive
+                SetTimer(UltimatumRunDetectCycle, -3000)
+            return
+        }
         ; 0x40000 = MB_TOPMOST so the dialog stays above the game and other
         ; windows that might steal focus on hover.
         MsgBox("None of [Begin, Accept Trial, Confirm] were found on screen.`n`nMake sure each has a row in the Modifier or Icon tables with a FindText pattern."
@@ -957,8 +991,12 @@ UltimatumDetectByButton(*) {
         }
     }
 
-    if YesUltimatumEmulateAutomation {
+    if looping {
         UltimatumEmulateChoice(matches, positions, btnCenterX, btnCenterY, yDelta)
+        ; UltimatumEmulateChoice may have flipped the loop off (Not Found
+        ; / Take Reward error). Reschedule only if still active.
+        if UltimatumEmulateLoopActive
+            SetTimer(UltimatumRunDetectCycle, -3000)
         return
     }
 
@@ -977,12 +1015,14 @@ UltimatumDetectByButton(*) {
 ; ─────────────────────────────────────────────────────────────────────────────
 UltimatumEmulateChoice(matches, positions, btnCenterX, btnCenterY, yDelta) {
     global UltimatumLV, UltimatumIconLV, UltimatumErr1, UltimatumErr0, UltimatumUI
+    global UltimatumEmulateLoopActive
 
     grouped := UltimatumGroupByPos(matches)
 
     ; Pause if any modifier slot wasn't identified.
     for _, posName in ["Left", "Middle", "Right"] {
         if grouped[posName].mod = "Not Found" {
+            UltimatumEmulateLoopActive := false  ; stop the cycle loop
             Send("{Escape}")
             Sleep(50)
             try UltimatumUI.Show()
@@ -998,6 +1038,7 @@ UltimatumEmulateChoice(matches, positions, btnCenterX, btnCenterY, yDelta) {
     if decision.takeReward {
         trFT := UltimatumLookupFindText("Take Reward")
         if trFT = "" {
+            UltimatumEmulateLoopActive := false
             MsgBox("Take Reward FindText not configured (add a row named 'Take Reward')."
                  , "Emulate Automation", "IconX 0x40000")
             return
@@ -1006,6 +1047,7 @@ UltimatumEmulateChoice(matches, positions, btnCenterX, btnCenterY, yDelta) {
         tr := FindText(&outX, &outY, 0, 0, A_ScreenWidth, A_ScreenHeight
             , UltimatumErr1, UltimatumErr0, trFT)
         if !tr {
+            UltimatumEmulateLoopActive := false
             MsgBox("Take Reward icon was not found on screen.", "Emulate Automation", "IconX 0x40000")
             return
         }

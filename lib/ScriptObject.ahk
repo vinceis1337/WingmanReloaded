@@ -104,7 +104,7 @@ Global YesUltimatumShowHighlight := 1
 Global YesUltimatumShowScreenshot := 0
 Global YesUltimatumShowMouseCoords := 0
 Global YesUltimatumEmulateAutomation := 0
-Global UltimatumLastEmulateTick := 0
+Global UltimatumEmulateLoopActive := false
 Global UltimatumErr1 := 0.1
 Global UltimatumErr0 := 0.1
 
