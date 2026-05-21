@@ -342,7 +342,8 @@ UltimatumTestDetection(*) {
         }
     }
 
-    ; Scan Icons table (FindText is column 2)
+    ; Scan Icons table (FindText is column 2) – report every match per row,
+    ; since the same Icon typically appears multiple times on screen.
     Loop UltimatumIconLV.GetCount() {
         name  := UltimatumIconLV.GetText(A_Index, 1)
         ftStr := UltimatumIconLV.GetText(A_Index, 2)
@@ -352,14 +353,18 @@ UltimatumTestDetection(*) {
         ok := FindText(&outX, &outY, 0, 0, A_ScreenWidth, A_ScreenHeight, UltimatumErr1, UltimatumErr0, ftStr, 0)
         if ok {
             found++
+            ; Flash MouseTip on only the first match to avoid a long sequential
+            ; flash chain when there are many hits; the rest are clickable in
+            ; the Matches debug window.
             if YesUltimatumShowHighlight
                 MouseTip(ok[1].1, ok[1].2, ok[1].3, ok[1].4)
-            matches.Push({source: "Icon", name: name
-                , x: ok[1].1, y: ok[1].2, w: ok[1].3, h: ok[1].4})
+            for _, m in ok
+                matches.Push({source: "Icon", name: name
+                    , x: m.1, y: m.2, w: m.3, h: m.4})
         }
     }
 
-    ToolTip("Ultimatum Detection: " found "/" total " icons found")
+    ToolTip("Ultimatum Detection: " found "/" total " rows matched (" matches.Length " total matches)")
     SetTimer(() => ToolTip(), -2000)
 
     UltimatumShowMatches(matches)
