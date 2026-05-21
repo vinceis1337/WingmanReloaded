@@ -27,8 +27,7 @@ UltimatumModsUI(*) {
         ["Modifier Name", "Tier1", "Tier2", "Tier3", "Tier4", "Detail", "FindText"])
     UltimatumLV.OnEvent("DoubleClick", UltimatumLVEdit)
     UltimatumRefreshList()
-    Loop UltimatumLV.GetCount("Column")
-        UltimatumLV.ModifyCol(A_Index, "AutoHdr")
+    UltimatumSizeColumns()
 
     ; Row 1 – persistence buttons + loaded-file label
     SplitPath(UltimatumModsJsonPath, &shortName)
@@ -57,6 +56,15 @@ UltimatumModsUI(*) {
 ; ─────────────────────────────────────────────────────────────────────────────
 ; Populate ListView from WR.UltimatumMods.Modifiers
 ; ─────────────────────────────────────────────────────────────────────────────
+; ─────────────────────────────────────────────────────────────────────────────
+; Size every column to its header, then widen Detail for multi-line display
+; ─────────────────────────────────────────────────────────────────────────────
+UltimatumSizeColumns() {
+    global UltimatumLV
+    UltimatumSizeColumns()
+    UltimatumLV.ModifyCol(6, 280)  ; Detail column – wider to show tier notes
+}
+
 UltimatumRefreshList() {
     global UltimatumLV, WR
     get(m, k) => (m.Has(k) ? m[k] : "")
@@ -119,7 +127,7 @@ UltimatumLVEdit(ctrl, rowNum, *) {
     eT4.Choose(d.t4 = "" ? "Easy" : d.t4)
 
     e.Add("Text",  "xs y+8",           "Detail:")
-    eDetail := e.Add("Edit",  "xs y+3 w380",  d.detail)
+    eDetail := e.Add("Edit",  "xs y+3 w380 r4 Multi WantReturn +VScroll",  d.detail)
 
     e.Add("Text",  "xs y+8",           "FindText:")
     eFT     := e.Add("Edit",  "xs y+3 w310 r1", d.ft)
@@ -155,8 +163,7 @@ UltimatumDeleteRow(editGui, rowNum, *) {
 UltimatumAddRow(*) {
     global UltimatumLV
     UltimatumLV.Add("", "New Modifier", "Easy", "Easy", "Easy", "Easy", "", "")
-    Loop UltimatumLV.GetCount("Column")
-        UltimatumLV.ModifyCol(A_Index, "AutoHdr")
+    UltimatumSizeColumns()
 }
 
 ; ─────────────────────────────────────────────────────────────────────────────
@@ -311,8 +318,7 @@ UltimatumLoadDefaults(*) {
     IniWrite(UltimatumModsJsonPath, A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumModsJsonPath")
     UltimatumLV.Delete()
     UltimatumRefreshList()
-    Loop UltimatumLV.GetCount("Column")
-        UltimatumLV.ModifyCol(A_Index, "AutoHdr")
+    UltimatumSizeColumns()
     SplitPath(UltimatumModsJsonPath, &shortName)
     UltimatumFileLbl.Text := shortName
 }
@@ -338,8 +344,7 @@ UltimatumLoadJson(*) {
     IniWrite(UltimatumModsJsonPath, A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumModsJsonPath")
     UltimatumLV.Delete()
     UltimatumRefreshList()
-    Loop UltimatumLV.GetCount("Column")
-        UltimatumLV.ModifyCol(A_Index, "AutoHdr")
+    UltimatumSizeColumns()
     SplitPath(UltimatumModsJsonPath, &shortName)
     UltimatumFileLbl.Text := shortName
 }
