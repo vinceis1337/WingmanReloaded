@@ -266,8 +266,10 @@ UltimatumSaveJson(*) {
     savePath := FileSelect("S16", saveDir "\" shortName, "Save Modifier Json", "JSON Files (*.json)")
     if savePath = ""
         return
-    FileDelete(savePath)
-    FileAppend(JSON.Dump(WR.UltimatumMods.Modifiers,, 2), savePath)
+    if (FileExist(savepath)) {
+        FileDelete(savePath)
+    }
+    FileAppend(JSON.Dump(WR.UltimatumMods.Modifiers, 2), savePath)
     UltimatumModsJsonPath := savePath
     IniWrite(UltimatumModsJsonPath, A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumModsJsonPath")
     SplitPath(UltimatumModsJsonPath, &shortName)
