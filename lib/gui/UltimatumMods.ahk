@@ -47,6 +47,7 @@ UltimatumModsUI(*) {
     global UltimatumUI, UltimatumLV, UltimatumIconLV, UltimatumFileLbl
     global WR, UltimatumModsJsonPath
     global YesUltimatumShowHighlight, YesUltimatumShowScreenshot, YesUltimatumShowMouseCoords
+    global YesUltimatumEmulateAutomation
     global UltimatumErr1, UltimatumErr0
 
     UltimatumUI := Gui()
@@ -94,6 +95,9 @@ UltimatumModsUI(*) {
     cbMC.OnEvent("Click", (*) => UltimatumSaveMouseCoords(cbMC))
     if YesUltimatumShowMouseCoords
         SetTimer(UltimatumMouseCoordsTick, 50)
+    cbEmu := UltimatumUI.Add("CheckBox", "x+8 yp", "Emulate Automation")
+    cbEmu.Value := YesUltimatumEmulateAutomation
+    cbEmu.OnEvent("Click", (*) => UltimatumSaveEmulate(cbEmu))
 
     ; FindText sensitivity inputs (err1 = foreground/text, err0 = background)
     UltimatumUI.Add("Text", "xs+5 y+12",   "Err1 (text):")
@@ -245,7 +249,7 @@ UltimatumLVEdit(ctrl, rowNum, *) {
     e.Opt("+AlwaysOnTop -MinimizeBox")
     e.Title := "Edit Ultimatum Modifier"
 
-    ratings := ["Easy", "Manageable", "Hard", "Deadly", "N/A"]
+    ratings := ["Easy", "Manageable", "Hard", "Deadly", "N/A", "Impossible"]
 
     e.Add("Text",  "Section",          "Modifier Name:")
     eName   := e.Add("Edit",  "xs y+3 w380",  d.name)
@@ -450,10 +454,14 @@ UltimatumShowMatches(matches) {
 
     ; Selectable-modifier analysis (Left / Middle / Right) — monospaced so
     ; columns line up visually.
-    analysisText := UltimatumAnalyzeSelectable(matches)
+    grouped := UltimatumGroupMatches(matches)
     UltimatumMatchesUI.SetFont("s9", "Consolas")
-    UltimatumMatchesUI.Add("Text", "y+10 w700 r3", analysisText)
+    UltimatumMatchesUI.Add("Text", "y+10 w700 r3", UltimatumFormatPositionAnalysis(grouped))
     UltimatumMatchesUI.SetFont()
+
+    ; Suggested modifier pick based on Modifier×Tier difficulty.
+    decision := UltimatumChooseModifier(grouped)
+    UltimatumMatchesUI.Add("Text", "y+10 w700 r3", UltimatumFormatSuggestion(decision))
 
     UltimatumMatchesUI.Show()
 }
@@ -473,8 +481,15 @@ UltimatumShowMatches(matches) {
 ; Returns a 3-line monospaced string ready for a Text control.
 ; ─────────────────────────────────────────────────────────────────────────────
 UltimatumAnalyzeSelectable(matches) {
-    ; If any match carries a `pos` tag (only Detect-by-Button does this),
-    ; group by position directly instead of guessing from X coordinates.
+    return UltimatumFormatPositionAnalysis(UltimatumGroupMatches(matches))
+}
+
+; ─────────────────────────────────────────────────────────────────────────────
+; Build the Left/Middle/Right grouping. Prefers position tags (Detect by
+; Button) when present; otherwise derives positions from X-sorted matches
+; (Test Detection).
+; ─────────────────────────────────────────────────────────────────────────────
+UltimatumGroupMatches(matches) {
     hasPos := false
     for _, m in matches {
         if m.HasOwnProp("pos") {
@@ -482,11 +497,10 @@ UltimatumAnalyzeSelectable(matches) {
             break
         }
     }
-
     if hasPos
-        return UltimatumFormatPositionAnalysis(UltimatumGroupByPos(matches))
+        return UltimatumGroupByPos(matches)
 
-    ; Fallback (Test Detection path) – derive position from X coordinates.
+    ; X-coordinate fallback — Test Detection path.
     mods     := []
     numIcons := []
     for _, m in matches {
@@ -519,7 +533,7 @@ UltimatumAnalyzeSelectable(matches) {
     Loop mLimit
         grouped[order[A_Index]].mod := mods[A_Index].name
 
-    return UltimatumFormatPositionAnalysis(grouped)
+    return grouped
 }
 
 ; ─────────────────────────────────────────────────────────────────────────────
@@ -554,6 +568,95 @@ UltimatumFormatPositionAnalysis(grouped) {
     return Format(fmt, "Left Modifier", "Middle Modifier", "Right Modifier")
          . "`n" . Format(fmt, grouped["Left"].tier, grouped["Middle"].tier, grouped["Right"].tier)
          . "`n" . Format(fmt, grouped["Left"].mod,  grouped["Middle"].mod,  grouped["Right"].mod)
+}
+
+; ─────────────────────────────────────────────────────────────────────────────
+; Difficulty ranking for the user-configured Tier columns. Lower = easier.
+; Anything outside the four "viable" ratings is treated as unviable.
+; ─────────────────────────────────────────────────────────────────────────────
+UltimatumDifficultyRank(diff) {
+    static ranks := Map(
+        "Easy",       1,
+        "Manageable", 2,
+        "Hard",       3,
+        "Deadly",     4,
+        "N/A",        99,
+        "Impossible", 99)
+    return ranks.Has(diff) ? ranks[diff] : 99
+}
+
+; Walk the Modifier ListView; for the row whose Name = modName, return the
+; TierN cell that matches tierStr ("Tier 1" .. "Tier 4"). "" if not found.
+UltimatumLookupTierDifficulty(modName, tierStr) {
+    global UltimatumLV
+    if !RegExMatch(tierStr, "(\d+)", &mm)
+        return ""
+    tierNum := mm[1] + 0
+    if tierNum < 1 || tierNum > 4
+        return ""
+    colIdx := tierNum + 1  ; ListView col layout: 1=name, 2=Tier1 .. 5=Tier4
+    Loop UltimatumLV.GetCount() {
+        if UltimatumLV.GetText(A_Index, 1) = modName
+            return UltimatumLV.GetText(A_Index, colIdx)
+    }
+    return ""
+}
+
+; ─────────────────────────────────────────────────────────────────────────────
+; Decide which on-screen modifier to pick given the Left/Middle/Right group.
+; Returns:
+;   { takeReward: true,  winners: [], candidates: [...] }   ; all unviable
+;   { takeReward: false, winners: [ {pos, mod, tier, diff}, ... ], candidates: [...] }
+;     – one entry per tied lowest-rank viable position.
+; ─────────────────────────────────────────────────────────────────────────────
+UltimatumChooseModifier(grouped) {
+    order := ["Left", "Middle", "Right"]
+    candidates := []
+    for _, posName in order {
+        if !grouped.Has(posName)
+            continue
+        info := grouped[posName]
+        diff := UltimatumLookupTierDifficulty(info.mod, info.tier)
+        candidates.Push({pos: posName, mod: info.mod, tier: info.tier
+            , diff: diff, rank: UltimatumDifficultyRank(diff)})
+    }
+
+    ; If no viable candidate exists (every rank ≥ 99) suggest Take Reward.
+    minRank := 99
+    for _, c in candidates {
+        if c.rank < minRank
+            minRank := c.rank
+    }
+    if minRank >= 99
+        return {takeReward: true, winners: [], candidates: candidates}
+
+    winners := []
+    for _, c in candidates {
+        if c.rank = minRank
+            winners.Push(c)
+    }
+    return {takeReward: false, winners: winners, candidates: candidates}
+}
+
+UltimatumFormatSuggestion(decision) {
+    if decision.takeReward {
+        return "Suggestion: Take Reward — every modifier is Impossible / N/A."
+    }
+    fmtOne(w) => w.pos " — " w.mod " (" w.tier ", " (w.diff = "" ? "?" : w.diff) ")"
+    if decision.winners.Length = 1
+        return "Suggestion: " fmtOne(decision.winners[1])
+
+    parts := []
+    for _, w in decision.winners
+        parts.Push(fmtOne(w))
+    return "Tied — pick any:`n  " UltimatumJoin(parts, "`n  ")
+}
+
+UltimatumJoin(arr, sep) {
+    s := ""
+    for k, v in arr
+        s .= (k > 1 ? sep : "") . v
+    return s
 }
 
 ; ─────────────────────────────────────────────────────────────────────────────
@@ -657,6 +760,12 @@ UltimatumMouseCoordsTick() {
     ToolTip("X: " mx "  Y: " my, mx + 15, my + 15, 3)
 }
 
+UltimatumSaveEmulate(cb, *) {
+    global YesUltimatumEmulateAutomation
+    YesUltimatumEmulateAutomation := cb.Value
+    IniWrite(YesUltimatumEmulateAutomation, A_ScriptDir "\save\Settings.ini", "Automation", "YesUltimatumEmulateAutomation")
+}
+
 UltimatumSaveErr1(ctrl, *) {
     global UltimatumErr1
     UltimatumErr1 := ctrl.Value
@@ -723,6 +832,7 @@ UltimatumLookupFindText(searchName) {
 ; ─────────────────────────────────────────────────────────────────────────────
 UltimatumDetectByButton(*) {
     global UltimatumLV, UltimatumIconLV, UltimatumErr1, UltimatumErr0, WR
+    global YesUltimatumEmulateAutomation
 
     ; Try each known ultimatum button in turn; use the first one whose
     ; FindText pattern (looked up by Name) is present on screen.
@@ -820,7 +930,78 @@ UltimatumDetectByButton(*) {
         }
     }
 
+    if YesUltimatumEmulateAutomation {
+        UltimatumEmulateChoice(matches, positions, btnCenterX, btnCenterY, yDelta)
+        return
+    }
+
     UltimatumShowMatches(matches)
+}
+
+; ─────────────────────────────────────────────────────────────────────────────
+; Emulate Automation path — invoked from UltimatumDetectByButton when the
+; Emulate Automation checkbox is on. Does NOT open the matches window;
+; instead it picks the suggested modifier (or Take Reward when everything
+; is unviable) and clicks it, then clicks the button that anchored the cycle.
+;
+; If any Left/Middle/Right slot has Modifier = "Not Found", the cycle is
+; paused: presses Escape in-game, makes sure the Ultimatum Modifier Manager
+; window is visible, and pops an always-on-top MsgBox.
+; ─────────────────────────────────────────────────────────────────────────────
+UltimatumEmulateChoice(matches, positions, btnCenterX, btnCenterY, yDelta) {
+    global UltimatumLV, UltimatumIconLV, UltimatumErr1, UltimatumErr0, UltimatumUI
+
+    grouped := UltimatumGroupByPos(matches)
+
+    ; Pause if any modifier slot wasn't identified.
+    for _, posName in ["Left", "Middle", "Right"] {
+        if grouped[posName].mod = "Not Found" {
+            Send("{Escape}")
+            Sleep(50)
+            try UltimatumUI.Show()
+            MsgBox("Modifier not identified in the " posName " slot. Emulation paused.`n`n"
+                 . "Adjust your icon/modifier rows or sensitivity and re-run."
+                 , "Emulate Automation", "IconX 0x40000")
+            return
+        }
+    }
+
+    decision := UltimatumChooseModifier(grouped)
+
+    if decision.takeReward {
+        trFT := UltimatumLookupFindText("Take Reward")
+        if trFT = "" {
+            MsgBox("Take Reward FindText not configured (add a row named 'Take Reward')."
+                 , "Emulate Automation", "IconX 0x40000")
+            return
+        }
+        outX := "", outY := ""
+        tr := FindText(&outX, &outY, 0, 0, A_ScreenWidth, A_ScreenHeight
+            , UltimatumErr1, UltimatumErr0, trFT)
+        if !tr {
+            MsgBox("Take Reward icon was not found on screen.", "Emulate Automation", "IconX 0x40000")
+            return
+        }
+        MouseMove(tr[1].x, tr[1].y, 0)
+        Sleep(75)
+        Click()
+        return
+    }
+
+    ; Pick the first tied winner (left-most wins on ties).
+    winner := decision.winners[1]
+    posIdx := winner.pos = "Left" ? 1 : winner.pos = "Middle" ? 2 : 3
+    modX := positions[posIdx].x
+    modY := btnCenterY - yDelta
+
+    MouseMove(modX, modY, 0)
+    Sleep(75)
+    Click()
+    Sleep(150)
+
+    MouseMove(btnCenterX, btnCenterY, 0)
+    Sleep(75)
+    Click()
 }
 
 ; ─────────────────────────────────────────────────────────────────────────────

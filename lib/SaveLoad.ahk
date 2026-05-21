@@ -729,6 +729,7 @@ readFromFile(){
 	YesUltimatumShowHighlight := IniRead(A_ScriptDir "\save\Settings.ini", "Automation", "YesUltimatumShowHighlight", 1)
 	YesUltimatumShowScreenshot := IniRead(A_ScriptDir "\save\Settings.ini", "Automation", "YesUltimatumShowScreenshot", 0)
 	YesUltimatumShowMouseCoords := IniRead(A_ScriptDir "\save\Settings.ini", "Automation", "YesUltimatumShowMouseCoords", 0)
+	YesUltimatumEmulateAutomation := IniRead(A_ScriptDir "\save\Settings.ini", "Automation", "YesUltimatumEmulateAutomation", 0)
 	UltimatumErr1 := IniRead(A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumErr1", 0.1)
 	UltimatumErr0 := IniRead(A_ScriptDir "\save\Settings.ini", "Automation", "UltimatumErr0", 0.1)
 
