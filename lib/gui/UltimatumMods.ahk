@@ -394,11 +394,17 @@ UltimatumMatchClick(ctrl, rowNum, *) {
     global UltimatumMatchesLV
     if !rowNum
         return
+    source := UltimatumMatchesLV.GetText(rowNum, 1)
+    name   := UltimatumMatchesLV.GetText(rowNum, 2)
     x := UltimatumMatchesLV.GetText(rowNum, 3) + 0
     y := UltimatumMatchesLV.GetText(rowNum, 4) + 0
     w := UltimatumMatchesLV.GetText(rowNum, 5) + 0
     h := UltimatumMatchesLV.GetText(rowNum, 6) + 0
     MouseTip(x, y, w, h)
+    ; Notification under the highlight box; uses tooltip ID 2 so it doesn't
+    ; clobber the default ToolTip used elsewhere.
+    ToolTip("↑ " source ": " name " (highlight box above)", x, y + h + 20, 2)
+    SetTimer(() => ToolTip(,,, 2), -2500)
 }
 
 UltimatumSaveHighlight(cb, *) {
