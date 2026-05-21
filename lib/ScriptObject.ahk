@@ -97,6 +97,7 @@ WR.UltimatumMods.Icons := []
 Global UltimatumModsJsonPath := ""
 Global YesUltimatumShowHighlight := 1
 Global YesUltimatumShowScreenshot := 0
+Global YesUltimatumShowMouseCoords := 0
 Global UltimatumErr1 := 0.1
 Global UltimatumErr0 := 0.1
 

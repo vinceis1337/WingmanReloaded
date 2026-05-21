@@ -28,7 +28,7 @@ UltimatumLoadFromPath(path) {
 UltimatumModsUI(*) {
     global UltimatumUI, UltimatumLV, UltimatumIconLV, UltimatumFileLbl
     global WR, UltimatumModsJsonPath
-    global YesUltimatumShowHighlight, YesUltimatumShowScreenshot
+    global YesUltimatumShowHighlight, YesUltimatumShowScreenshot, YesUltimatumShowMouseCoords
     global UltimatumErr1, UltimatumErr0
 
     UltimatumUI := Gui()
@@ -71,6 +71,11 @@ UltimatumModsUI(*) {
     cbSS := UltimatumUI.Add("CheckBox", "x+8 yp", "Show Screenshot")
     cbSS.Value := YesUltimatumShowScreenshot
     cbSS.OnEvent("Click", (*) => UltimatumSaveScreenshot(cbSS))
+    cbMC := UltimatumUI.Add("CheckBox", "x+8 yp", "Show Mouse Coords")
+    cbMC.Value := YesUltimatumShowMouseCoords
+    cbMC.OnEvent("Click", (*) => UltimatumSaveMouseCoords(cbMC))
+    if YesUltimatumShowMouseCoords
+        SetTimer(UltimatumMouseCoordsTick, 50)
 
     ; FindText sensitivity inputs (err1 = foreground/text, err0 = background)
     UltimatumUI.Add("Text", "xs+5 y+12",   "Err1 (text):")
@@ -544,6 +549,25 @@ UltimatumSaveScreenshot(cb, *) {
     global YesUltimatumShowScreenshot
     YesUltimatumShowScreenshot := cb.Value
     IniWrite(YesUltimatumShowScreenshot, A_ScriptDir "\save\Settings.ini", "Automation", "YesUltimatumShowScreenshot")
+}
+
+UltimatumSaveMouseCoords(cb, *) {
+    global YesUltimatumShowMouseCoords
+    YesUltimatumShowMouseCoords := cb.Value
+    IniWrite(YesUltimatumShowMouseCoords, A_ScriptDir "\save\Settings.ini", "Automation", "YesUltimatumShowMouseCoords")
+    if cb.Value {
+        SetTimer(UltimatumMouseCoordsTick, 50)
+    } else {
+        SetTimer(UltimatumMouseCoordsTick, 0)
+        ToolTip(,,, 3)
+    }
+}
+
+; Debug tick: prints the current mouse position to ToolTip ID 3 (separate
+; from the default ToolTip and from the match-click notification on ID 2).
+UltimatumMouseCoordsTick() {
+    MouseGetPos(&mx, &my)
+    ToolTip("X: " mx "  Y: " my, mx + 15, my + 15, 3)
 }
 
 UltimatumSaveErr1(ctrl, *) {
