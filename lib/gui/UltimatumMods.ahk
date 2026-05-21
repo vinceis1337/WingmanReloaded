@@ -24,7 +24,7 @@ UltimatumModsUI(*) {
     UltimatumUI.Title := "Ultimatum Modifier Manager"
 
     UltimatumLV := UltimatumUI.Add("ListView", "w950 h400 -wrap -Multi Grid",
-        ["Modifier Name", "Tier", "Detail", "Rating", "FindText"])
+        ["Modifier Name", "Tier1", "Tier2", "Tier3", "Tier4", "Detail", "FindText"])
     UltimatumLV.OnEvent("DoubleClick", UltimatumLVEdit)
     UltimatumRefreshList()
     Loop UltimatumLV.GetCount("Column")
@@ -59,8 +59,16 @@ UltimatumModsUI(*) {
 ; ─────────────────────────────────────────────────────────────────────────────
 UltimatumRefreshList() {
     global UltimatumLV, WR
+    get(m, k) => (m.Has(k) ? m[k] : "")
     for k, v in WR.UltimatumMods.Modifiers
-        UltimatumLV.Add("", v["ModifierName"], v["Tier"], v["Detail"], v["Rating"], v["FindText"])
+        UltimatumLV.Add("",
+            get(v, "ModifierName"),
+            get(v, "Tier1"),
+            get(v, "Tier2"),
+            get(v, "Tier3"),
+            get(v, "Tier4"),
+            get(v, "Detail"),
+            get(v, "FindText"))
 }
 
 ; ─────────────────────────────────────────────────────────────────────────────
@@ -69,10 +77,12 @@ UltimatumRefreshList() {
 UltimatumGetRowData(lv, row) {
     return {
         name:   lv.GetText(row, 1),
-        tier:   lv.GetText(row, 2),
-        detail: lv.GetText(row, 3),
-        rating: lv.GetText(row, 4),
-        ft:     lv.GetText(row, 5)
+        t1:     lv.GetText(row, 2),
+        t2:     lv.GetText(row, 3),
+        t3:     lv.GetText(row, 4),
+        t4:     lv.GetText(row, 5),
+        detail: lv.GetText(row, 6),
+        ft:     lv.GetText(row, 7)
     }
 }
 
@@ -90,20 +100,32 @@ UltimatumLVEdit(ctrl, rowNum, *) {
     e.Opt("+AlwaysOnTop -MinimizeBox")
     e.Title := "Edit Ultimatum Modifier"
 
+    ratings := ["Easy", "Manageable", "Hard", "Deadly"]
+
     e.Add("Text",  "Section",          "Modifier Name:")
-    eName   := e.Add("Edit",  "xs y+3 w240",  d.name)
-    e.Add("Text",  "xs y+8",           "Tier:")
-    eTier   := e.Add("Edit",  "xs y+3 w80",   d.tier)
+    eName   := e.Add("Edit",  "xs y+3 w380",  d.name)
+
+    e.Add("Text",  "xs y+8",           "Tier 1:")
+    e.Add("Text",  "xs+95 yp",         "Tier 2:")
+    e.Add("Text",  "xs+190 yp",        "Tier 3:")
+    e.Add("Text",  "xs+285 yp",        "Tier 4:")
+    eT1 := e.Add("DropDownList", "xs y+3 w90",   ratings)
+    eT1.Choose(d.t1 = "" ? "Easy" : d.t1)
+    eT2 := e.Add("DropDownList", "x+5 yp w90",   ratings)
+    eT2.Choose(d.t2 = "" ? "Easy" : d.t2)
+    eT3 := e.Add("DropDownList", "x+5 yp w90",   ratings)
+    eT3.Choose(d.t3 = "" ? "Easy" : d.t3)
+    eT4 := e.Add("DropDownList", "x+5 yp w90",   ratings)
+    eT4.Choose(d.t4 = "" ? "Easy" : d.t4)
+
     e.Add("Text",  "xs y+8",           "Detail:")
     eDetail := e.Add("Edit",  "xs y+3 w380",  d.detail)
-    e.Add("Text",  "xs y+8",           "Rating:")
-    eRating := e.Add("DropDownList", "xs y+3", ["Easy", "Manageable", "Hard", "Deadly"])
-    eRating.Choose(d.rating)
+
     e.Add("Text",  "xs y+8",           "FindText:")
     eFT     := e.Add("Edit",  "xs y+3 w310 r1", d.ft)
     e.Add("Button", "x+3 yp w65 h20", "Capture").OnEvent("Click", (*) => ft_Start())
     e.Add("Button", "xs y+10 w120 h28", "Save").OnEvent("Click",
-        (*) => UltimatumCommitRow(e, rowNum, eName, eTier, eDetail, eRating, eFT))
+        (*) => UltimatumCommitRow(e, rowNum, eName, eT1, eT2, eT3, eT4, eDetail, eFT))
     e.Add("Button", "x+5 w120 h28", "Delete Row").OnEvent("Click",
         (*) => UltimatumDeleteRow(e, rowNum))
     e.Show()
@@ -112,9 +134,9 @@ UltimatumLVEdit(ctrl, rowNum, *) {
 ; ─────────────────────────────────────────────────────────────────────────────
 ; Commit edits from the row editor back into the main ListView
 ; ─────────────────────────────────────────────────────────────────────────────
-UltimatumCommitRow(editGui, rowNum, eName, eTier, eDetail, eRating, eFT, *) {
+UltimatumCommitRow(editGui, rowNum, eName, eT1, eT2, eT3, eT4, eDetail, eFT, *) {
     global UltimatumLV
-    UltimatumLV.Modify(rowNum,, eName.Value, eTier.Value, eDetail.Value, eRating.Text, eFT.Value)
+    UltimatumLV.Modify(rowNum,, eName.Value, eT1.Text, eT2.Text, eT3.Text, eT4.Text, eDetail.Value, eFT.Value)
     editGui.Hide()
 }
 
@@ -132,7 +154,7 @@ UltimatumDeleteRow(editGui, rowNum, *) {
 ; ─────────────────────────────────────────────────────────────────────────────
 UltimatumAddRow(*) {
     global UltimatumLV
-    UltimatumLV.Add("", "New Modifier", "1", "", "Easy", "")
+    UltimatumLV.Add("", "New Modifier", "Easy", "Easy", "Easy", "Easy", "", "")
     Loop UltimatumLV.GetCount("Column")
         UltimatumLV.ModifyCol(A_Index, "AutoHdr")
 }
@@ -147,7 +169,7 @@ UltimatumMoveUp(*) {
         return
     d := UltimatumGetRowData(UltimatumLV, sel)
     UltimatumLV.Delete(sel)
-    UltimatumLV.Insert(sel - 1, "", d.name, d.tier, d.detail, d.rating, d.ft)
+    UltimatumLV.Insert(sel - 1, "", d.name, d.t1, d.t2, d.t3, d.t4, d.detail, d.ft)
     UltimatumLV.Modify(sel - 1, "Focus Select")
 }
 
@@ -161,7 +183,7 @@ UltimatumMoveDown(*) {
         return
     d := UltimatumGetRowData(UltimatumLV, sel)
     UltimatumLV.Delete(sel)
-    UltimatumLV.Insert(sel + 1, "", d.name, d.tier, d.detail, d.rating, d.ft)
+    UltimatumLV.Insert(sel + 1, "", d.name, d.t1, d.t2, d.t3, d.t4, d.detail, d.ft)
     UltimatumLV.Modify(sel + 1, "Focus Select")
 }
 
@@ -174,7 +196,7 @@ UltimatumDuplicateRow(*) {
     if !sel
         return
     d := UltimatumGetRowData(UltimatumLV, sel)
-    UltimatumLV.Insert(sel + 1, "", d.name, d.tier, d.detail, d.rating, d.ft)
+    UltimatumLV.Insert(sel + 1, "", d.name, d.t1, d.t2, d.t3, d.t4, d.detail, d.ft)
     UltimatumLV.Modify(sel + 1, "Focus Select")
 }
 
@@ -201,7 +223,7 @@ UltimatumTestDetection(*) {
     total := UltimatumLV.GetCount()
     found := 0
     Loop total {
-        ftStr := UltimatumLV.GetText(A_Index, 5)
+        ftStr := UltimatumLV.GetText(A_Index, 7)
         if ftStr = ""
             continue
         outX := "", outY := ""
@@ -246,10 +268,12 @@ UltimatumCollectRows() {
     Loop UltimatumLV.GetCount() {
         m := Map()
         m["ModifierName"] := UltimatumLV.GetText(A_Index, 1)
-        m["Tier"]         := UltimatumLV.GetText(A_Index, 2)
-        m["Detail"]       := UltimatumLV.GetText(A_Index, 3)
-        m["Rating"]       := UltimatumLV.GetText(A_Index, 4)
-        m["FindText"]     := UltimatumLV.GetText(A_Index, 5)
+        m["Tier1"]        := UltimatumLV.GetText(A_Index, 2)
+        m["Tier2"]        := UltimatumLV.GetText(A_Index, 3)
+        m["Tier3"]        := UltimatumLV.GetText(A_Index, 4)
+        m["Tier4"]        := UltimatumLV.GetText(A_Index, 5)
+        m["Detail"]       := UltimatumLV.GetText(A_Index, 6)
+        m["FindText"]     := UltimatumLV.GetText(A_Index, 7)
         WR.UltimatumMods.Modifiers.Push(m)
     }
 }
