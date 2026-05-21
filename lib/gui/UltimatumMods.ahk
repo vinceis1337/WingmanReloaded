@@ -851,7 +851,15 @@ UltimatumLookupFindText(searchName) {
 ; ─────────────────────────────────────────────────────────────────────────────
 UltimatumDetectByButton(*) {
     global UltimatumLV, UltimatumIconLV, UltimatumErr1, UltimatumErr0, WR
-    global YesUltimatumEmulateAutomation
+    global YesUltimatumEmulateAutomation, UltimatumLastEmulateTick
+
+    ; While emulating, throttle re-entry to once every 3 seconds so a held
+    ; / spammed trigger can't run multiple cycles back-to-back.
+    if YesUltimatumEmulateAutomation {
+        if (A_TickCount - UltimatumLastEmulateTick) < 3000
+            return
+        UltimatumLastEmulateTick := A_TickCount
+    }
 
     ; Try each known ultimatum button in turn; use the first one whose
     ; FindText pattern (looked up by Name) is present on screen.
