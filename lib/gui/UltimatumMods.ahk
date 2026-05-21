@@ -392,7 +392,7 @@ UltimatumShowMatches(matches) {
     UltimatumMatchesUI.Title := "Ultimatum Detection Matches (debug, in-memory only)"
 
     UltimatumMatchesLV := UltimatumMatchesUI.Add("ListView",
-        "w560 h300 -wrap -Multi Grid Checked", ["Source", "Name", "X", "Y", "W", "H"])
+        "w700 h300 -wrap -Multi Grid Checked", ["Source", "Name", "X", "Y", "W", "H"])
     UltimatumMatchesLV.OnEvent("DoubleClick", UltimatumMatchClick)
 
     for k, m in matches
@@ -402,7 +402,118 @@ UltimatumShowMatches(matches) {
         UltimatumMatchesLV.ModifyCol(A_Index, "AutoHdr")
 
     UltimatumMatchesUI.Add("Text", "y+5", "Double-click a row to flash its highlight box.  Tick a row to mark it as a bad detection (visual only).")
+
+    ; Selectable-modifier analysis (Left / Middle / Right) — monospaced so
+    ; columns line up visually.
+    analysisText := UltimatumAnalyzeSelectable(matches)
+    UltimatumMatchesUI.SetFont("s9", "Consolas")
+    UltimatumMatchesUI.Add("Text", "y+10 w700 r3", analysisText)
+    UltimatumMatchesUI.SetFont()
+
     UltimatumMatchesUI.Show()
+}
+
+; ─────────────────────────────────────────────────────────────────────────────
+; Identify the three on-screen modifier choices (Left/Middle/Right) from the
+; in-memory match list:
+;   1. Find Icon matches whose Name is purely numeric — those are the
+;      Tier-number glyphs that label each modifier choice.
+;   2. Look for a triplet whose Y values are all within 15px of each other
+;      (i.e. they sit on the same horizontal row on screen).
+;   3. Sort that triplet by X — least X = Left, highest X = Right, the
+;      remaining one = Middle.
+;   4. Sort Modifier matches by X and pair them with the tier positions in
+;      the same order.
+;   5. Anything missing on either side falls back to "Not Found".
+; Returns a 3-line monospaced string ready for a Text control.
+; ─────────────────────────────────────────────────────────────────────────────
+UltimatumAnalyzeSelectable(matches) {
+    mods     := []
+    numIcons := []
+    for _, m in matches {
+        if m.source = "Modifier"
+            mods.Push(m)
+        else if m.source = "Icon" && m.name ~= "^\d+$"
+            numIcons.Push(m)
+    }
+
+    triple := UltimatumFindYTriplet(numIcons, 15)
+    ; Fallback: no perfect triplet — use whichever numeric icons we have so
+    ; we can still surface partial info.
+    if triple.Length < 3 && numIcons.Length > 0
+        triple := numIcons.Clone()
+
+    UltimatumSortByX(triple)
+    UltimatumSortByX(mods)
+
+    positions := []
+    Loop 3
+        positions.Push({tier: "Not Found", mod: "Not Found"})
+
+    tLimit := triple.Length < 3 ? triple.Length : 3
+    Loop tLimit
+        positions[A_Index].tier := "Tier " triple[A_Index].name
+
+    mLimit := mods.Length < 3 ? mods.Length : 3
+    Loop mLimit
+        positions[A_Index].mod := mods[A_Index].name
+
+    fmt := "%-25s ---- %-25s ---- %-25s"
+    return Format(fmt, "Left Modifier", "Middle Modifier", "Right Modifier")
+         . "`n" . Format(fmt, positions[1].tier, positions[2].tier, positions[3].tier)
+         . "`n" . Format(fmt, positions[1].mod, positions[2].mod, positions[3].mod)
+}
+
+; ─────────────────────────────────────────────────────────────────────────────
+; Y-triplet finder: returns the first 3 items (Y-sorted) whose Y values are
+; within `maxDistY` pixels of each other, or an empty array if none exist.
+; ─────────────────────────────────────────────────────────────────────────────
+UltimatumFindYTriplet(items, maxDistY) {
+    if items.Length < 3
+        return []
+    sorted := items.Clone()
+    UltimatumSortByY(sorted)
+    Loop sorted.Length - 2 {
+        i := A_Index
+        if (sorted[i+2].y - sorted[i].y) <= maxDistY
+            return [sorted[i], sorted[i+1], sorted[i+2]]
+    }
+    return []
+}
+
+; In-place bubble sorts (the arrays are tiny — ≤ a few dozen entries).
+UltimatumSortByX(arr) {
+    n := arr.Length
+    if n < 2
+        return
+    Loop n - 1 {
+        i := A_Index
+        Loop n - i {
+            j := A_Index
+            if (arr[j].x > arr[j+1].x) {
+                tmp := arr[j]
+                arr[j] := arr[j+1]
+                arr[j+1] := tmp
+            }
+        }
+    }
+}
+
+UltimatumSortByY(arr) {
+    n := arr.Length
+    if n < 2
+        return
+    Loop n - 1 {
+        i := A_Index
+        Loop n - i {
+            j := A_Index
+            if (arr[j].y > arr[j+1].y) {
+                tmp := arr[j]
+                arr[j] := arr[j+1]
+                arr[j+1] := tmp
+            }
+        }
+    }
 }
 
 UltimatumMatchClick(ctrl, rowNum, *) {
