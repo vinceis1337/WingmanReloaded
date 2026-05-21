@@ -377,7 +377,7 @@ UltimatumShowMatches(matches) {
     UltimatumMatchesUI.Title := "Ultimatum Detection Matches (debug, in-memory only)"
 
     UltimatumMatchesLV := UltimatumMatchesUI.Add("ListView",
-        "w560 h300 -wrap -Multi Grid", ["Source", "Name", "X", "Y", "W", "H"])
+        "w560 h300 -wrap -Multi Grid Checked", ["Source", "Name", "X", "Y", "W", "H"])
     UltimatumMatchesLV.OnEvent("DoubleClick", UltimatumMatchClick)
 
     for k, m in matches
@@ -386,7 +386,7 @@ UltimatumShowMatches(matches) {
     Loop UltimatumMatchesLV.GetCount("Column")
         UltimatumMatchesLV.ModifyCol(A_Index, "AutoHdr")
 
-    UltimatumMatchesUI.Add("Text", "y+5", "Double-click a row to flash its highlight box.")
+    UltimatumMatchesUI.Add("Text", "y+5", "Double-click a row to flash its highlight box.  Tick a row to mark it as a bad detection (visual only).")
     UltimatumMatchesUI.Show()
 }
 
